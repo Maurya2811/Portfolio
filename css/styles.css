@@ -96,7 +96,9 @@ p{
 }
 .profile-pic
 {
-    width:250px;
+    border-radius: 50%;
+    height: 50%;
+    width: 25%;
     margin-bottom:50px;
 }
 .profile{
@@ -150,9 +152,4 @@ p{
     color:#EAF6F6;
     font-size: 0.75rem;
     padding: 20px 0;
-}
-img {
-    border-radius: 50%;
-    height: 45%;
-   
 }
