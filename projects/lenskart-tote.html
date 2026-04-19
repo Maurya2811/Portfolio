@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lenskart · Tote Movement Optimization — Rahul Maurya</title>
+    <meta name="description" content="Graph-based pathfinding for tote routing between ASRS and GTP floor — reduced travel time 15%, latency 200ms+, throughput +12%.">
+    <link rel="icon" href="../favicon.ico?v=3">
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+    <script>try{var t=localStorage.getItem('rm-theme');document.documentElement.setAttribute('data-theme',t==='light'?'light':'dark');}catch(e){}</script>
+</head>
+
+<body>
+    <header class="nav">
+        <a href="../" class="brand">RM<span>.</span></a>
+        <nav>
+            <a href="../#about">About</a>
+            <a href="../#skills">Skills</a>
+            <a href="../#experience">Experience</a>
+            <a href="./">Projects</a>
+            <a href="../#contact">Contact</a>
+        </nav>
+        <a class="nav-cta" href="../resume/Rahul_Maurya.pdf" target="_blank" rel="noopener">Resume</a>
+    </header>
+
+    <main class="detail-wrap">
+        <p class="breadcrumb"><a href="../">home</a> / <a href="./">projects</a> / lenskart-tote</p>
+
+        <div class="detail-header">
+            <p class="subtitle">Algorithms · 2024 · Addverb Technologies · Bhiwadi, Rajasthan</p>
+            <h1>Lenskart — Tote Movement Optimization</h1>
+            <p class="lede">
+                Re-designed tote routing from the ASRS to the Goods-To-Person (GTP) floor using graph
+                algorithms — shaving travel time by 15% and lifting warehouse throughput by 12% in pilot.
+            </p>
+        </div>
+
+        <div class="meta-grid">
+            <div><span>Role</span>Software Development Engineer</div>
+            <div><span>Timeline</span>2024</div>
+            <div><span>Focus</span>Graph algorithms · Performance</div>
+            <div><span>Impact</span>−15% travel time · −200ms · +12% throughput</div>
+        </div>
+
+        <section class="detail-section">
+            <h2>Problem</h2>
+            <p>
+                At peak load the conveyor network between the ASRS exit and GTP stations became the
+                bottleneck — totes queued, pickers starved, and system latency bloated. The existing
+                router used naive FIFO + static rules that ignored congestion and alternative paths.
+            </p>
+        </section>
+
+        <section class="detail-section">
+            <h2>My Contribution</h2>
+            <ul>
+                <li>Modelled the conveyor network as a <strong>weighted directed graph</strong> — nodes are
+                    junctions/diverts, edges carry travel-time + live congestion weight.</li>
+                <li>Implemented a <strong>Dijkstra-based shortest-path</strong> service in Java, with
+                    congestion weights updated from live conveyor telemetry.</li>
+                <li>Added fallback routing (second-best path) when the primary route exceeded a
+                    congestion threshold, avoiding deadlocks during burst load.</li>
+                <li>Benchmarked against production traces before pilot rollout.</li>
+            </ul>
+        </section>
+
+        <section class="detail-section">
+            <h2>Tech Stack</h2>
+            <ul class="stack-row">
+                <li>Java</li><li>Spring Boot</li><li>Graph Algorithms</li><li>MySQL</li>
+                <li>RabbitMQ</li><li>Grafana</li>
+            </ul>
+        </section>
+
+        <section class="detail-section">
+            <h2>High-Level Design</h2>
+            <div class="diagram">
+                <pre class="mermaid">
+flowchart LR
+  ASRS["ASRS Exit"] --> ROUT["Tote Router Service<br/>(Java)"]
+  TELE["Conveyor Telemetry"] --> ROUT
+  ROUT -->|path plan| CCTRL["Conveyor Controller"]
+  CCTRL --> CONV[("Conveyor Network<br/>(graph)")]
+  CONV --> GTP["GTP Stations"]
+  ROUT --> METRICS["Grafana<br/>(travel time p95)"]
+                </pre>
+            </div>
+        </section>
+
+        <section class="detail-section">
+            <h2>Low-Level Design — Route Planning</h2>
+            <div class="diagram">
+                <pre class="mermaid">
+flowchart TB
+  A["Receive tote<br/>(source, destination)"] --> B["Load graph snapshot<br/>(edges + live weights)"]
+  B --> C{"Primary path<br/>available?"}
+  C -- yes --> D["Dijkstra shortest path"]
+  C -- no --> E["Yen's K-shortest<br/>(k=2)"]
+  D --> F["Estimate ETA + congestion"]
+  E --> F
+  F --> G{"ETA > threshold?"}
+  G -- yes --> H["Fallback path"]
+  G -- no --> I["Commit path"]
+  H --> I
+  I --> J["Publish route.assigned → controller"]
+                </pre>
+            </div>
+            <div class="callout">
+                <strong>Why Dijkstra + K-shortest:</strong> Dijkstra gives the optimal path on static
+                weights; K-shortest provides pre-computed alternates so fallback is O(1) under congestion
+                spikes — no re-planning cost on the hot path.
+            </div>
+        </section>
+
+        <section class="detail-section">
+            <h2>Impact</h2>
+            <ul>
+                <li><strong>−15%</strong> tote travel time.</li>
+                <li><strong>−200+ ms</strong> system latency per tote.</li>
+                <li><strong>+12%</strong> warehouse throughput during pilot phase.</li>
+            </ul>
+        </section>
+
+        <p class="breadcrumb"><a href="./">← back to projects</a></p>
+    </main>
+
+    <footer class="footer"><p>© <span id="year"></span> Rahul Maurya</p></footer>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+    <script src="../js/theme.js" defer></script>
+</body>
+
+</html>

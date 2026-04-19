@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UPS Healthcare · Movu Robotic Shuttle Integration — Rahul Maurya</title>
+    <meta name="description" content="Integrating Movu robotic shuttles with the ASRS platform — event-driven telemetry pipeline, health dashboards, MongoDB.">
+    <link rel="icon" href="../favicon.ico?v=3">
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+    <script>try{var t=localStorage.getItem('rm-theme');document.documentElement.setAttribute('data-theme',t==='light'?'light':'dark');}catch(e){}</script>
+</head>
+
+<body>
+    <header class="nav">
+        <a href="../" class="brand">RM<span>.</span></a>
+        <nav>
+            <a href="../#about">About</a>
+            <a href="../#skills">Skills</a>
+            <a href="../#experience">Experience</a>
+            <a href="./">Projects</a>
+            <a href="../#contact">Contact</a>
+        </nav>
+        <a class="nav-cta" href="../resume/Rahul_Maurya.pdf" target="_blank" rel="noopener">Resume</a>
+    </header>
+
+    <main class="detail-wrap">
+        <p class="breadcrumb"><a href="../">home</a> / <a href="./">projects</a> / ups-movu</p>
+
+        <div class="detail-header">
+            <p class="subtitle">Event-Driven Integration · 2024 · Addverb Technologies</p>
+            <h1>UPS Healthcare — Movu Robotic Shuttle Integration</h1>
+            <p class="lede">
+                Integrated 50+ Movu robotic shuttles and automated lifts into the existing ASRS platform
+                for a US-based UPS Healthcare warehouse — unifying orchestration across heterogeneous
+                hardware and exposing real-time shuttle health to operators.
+            </p>
+        </div>
+
+        <div class="meta-grid">
+            <div><span>Role</span>Software Development Engineer</div>
+            <div><span>Timeline</span>2024</div>
+            <div><span>Scale</span>50+ shuttles · 99.9% telemetry capture</div>
+            <div><span>Impact</span>−70% downtime diagnosis time</div>
+        </div>
+
+        <section class="detail-section">
+            <h2>Problem</h2>
+            <p>
+                UPS Healthcare deployed Movu robotic shuttles on top of an existing ASRS. The two stacks
+                spoke different protocols and kept their own state, so operators had no single view of
+                shuttle health. Incidents (stalled shuttles, failed handoffs, lift timeouts) took hours
+                to triage and blocked pharma-grade throughput SLAs.
+            </p>
+        </section>
+
+        <section class="detail-section">
+            <h2>My Contribution</h2>
+            <ul>
+                <li>Engineered the integration layer connecting <strong>Movu shuttle firmware APIs</strong>
+                    with the ASRS control plane — unified orchestration across both stacks.</li>
+                <li>Designed a <strong>real-time telemetry pipeline</strong> on MongoDB ingesting shuttle
+                    &amp; lift events at <strong>99.9% capture rate</strong>.</li>
+                <li>Built a shuttle-health dashboard exposing connectivity, battery, queue depth and
+                    fault states — cut downtime diagnosis by <strong>70%</strong>.</li>
+                <li>Hardened the failure path: idempotent consumers, DLQs, and replay from the event store.</li>
+            </ul>
+        </section>
+
+        <section class="detail-section">
+            <h2>Tech Stack</h2>
+            <ul class="stack-row">
+                <li>Java</li><li>Spring Boot</li><li>RabbitMQ</li><li>MongoDB</li>
+                <li>REST</li><li>Grafana</li><li>Docker</li><li>Kubernetes</li>
+            </ul>
+        </section>
+
+        <section class="detail-section">
+            <h2>High-Level Design (HLD)</h2>
+            <div class="diagram">
+                <pre class="mermaid">
+flowchart LR
+  SH["Movu Shuttles<br/>(50+)"] -->|REST / TCP| ADAPT["Movu Adapter<br/>Service"]
+  LF["Automated Lifts"] --> ADAPT
+  ADAPT --> Q[(RabbitMQ)]
+  Q --> ING["Telemetry Ingestor"]
+  ING --> M[(MongoDB<br/>time-series)]
+  Q --> ASRS["ASRS Core<br/>(Spring Boot)"]
+  ASRS <--> DB[(MySQL)]
+  M --> DASH["Health Dashboard<br/>(Grafana)"]
+  ASRS --> UI["Operator UI"]
+                </pre>
+            </div>
+        </section>
+
+        <section class="detail-section">
+            <h2>Low-Level Design — Telemetry Path</h2>
+            <div class="diagram">
+                <pre class="mermaid">
+sequenceDiagram
+  autonumber
+  participant S as Shuttle
+  participant A as Movu Adapter
+  participant Q as RabbitMQ (topic: shuttle.telemetry)
+  participant I as Ingestor
+  participant M as MongoDB
+  participant G as Grafana
+
+  S->>A: heartbeat + status (1Hz)
+  A->>Q: publish telemetry event
+  Q->>I: consume (idempotent)
+  I->>M: upsert shuttle state (doc)
+  I-->>Q: ack
+  G->>M: query (last 5m window)
+  G-->>Operator: live shuttle health panel
+
+  Note over Q,M: DLQ + replay path for transient failures
+                </pre>
+            </div>
+        </section>
+
+        <section class="detail-section">
+            <h2>Impact</h2>
+            <ul>
+                <li><strong>99.9%</strong> telemetry capture rate across 50+ shuttles.</li>
+                <li>Downtime diagnosis time <strong>−70%</strong>.</li>
+                <li>Zero-data-loss event replay during RabbitMQ broker failovers.</li>
+            </ul>
+        </section>
+
+        <p class="breadcrumb"><a href="./">← back to projects</a></p>
+    </main>
+
+    <footer class="footer"><p>© <span id="year"></span> Rahul Maurya</p></footer>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+    <script src="../js/theme.js" defer></script>
+</body>
+
+</html>

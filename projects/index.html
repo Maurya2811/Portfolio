@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projects — Rahul Maurya</title>
+    <meta name="description" content="Deep-dives into Rahul Maurya's warehouse automation and distributed systems projects — Maersk-Adidas, UPS Healthcare, Lenskart, MRF ASRS.">
+    <link rel="icon" href="../favicon.ico?v=3">
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+    <script>try{var t=localStorage.getItem('rm-theme');document.documentElement.setAttribute('data-theme',t==='light'?'light':'dark');}catch(e){}</script>
+</head>
+
+<body>
+    <header class="nav">
+        <a href="../" class="brand">RM<span>.</span></a>
+        <nav>
+            <a href="../#about">About</a>
+            <a href="../#skills">Skills</a>
+            <a href="../#experience">Experience</a>
+            <a href="./">Projects</a>
+            <a href="../#contact">Contact</a>
+        </nav>
+        <a class="nav-cta" href="../resume/Rahul_Maurya.pdf" target="_blank" rel="noopener">Resume</a>
+    </header>
+
+    <main class="detail-wrap">
+        <p class="breadcrumb"><a href="../">home</a> / projects</p>
+        <div class="detail-header">
+            <p class="subtitle">Engineering deep-dives</p>
+            <h1>Projects</h1>
+            <p class="lede">Architecture, contributions, and impact behind the systems I've shipped.</p>
+        </div>
+
+        <div class="projects projects-index">
+            <a class="project-link" href="maersk-adidas.html">
+                <article class="project">
+                    <header>
+                        <h4>Maersk · Adidas — Warehouse Automation Platform</h4>
+                        <span class="tag">2025 · Distributed Systems · 12+ Microservices</span>
+                    </header>
+                    <p>Multi-tenant WES/WCS platform orchestrating auction, decanting, packing, returns, robotic arms, boxit, quadron and multipro subsystems on Kubernetes.</p>
+                    <span class="project-cta">Read deep-dive →</span>
+                </article>
+            </a>
+            <a class="project-link" href="ups-movu.html">
+                <article class="project">
+                    <header>
+                        <h4>UPS Healthcare — Movu Robotic Shuttle Integration</h4>
+                        <span class="tag">2024 · Event-Driven · Real-Time Telemetry</span>
+                    </header>
+                    <p>Telemetry pipeline unifying 50+ Movu shuttles and automated lifts with the ASRS platform; 99.9% capture rate, 70% faster downtime diagnosis.</p>
+                    <span class="project-cta">Read deep-dive →</span>
+                </article>
+            </a>
+            <a class="project-link" href="lenskart-tote.html">
+                <article class="project">
+                    <header>
+                        <h4>Lenskart — Tote Movement Optimization</h4>
+                        <span class="tag">2024 · Algorithms · Performance</span>
+                    </header>
+                    <p>Graph-based pathfinding for tote routing from ASRS to GTP floor; −15% travel time, −200ms latency, +12% pilot throughput.</p>
+                    <span class="project-cta">Read deep-dive →</span>
+                </article>
+            </a>
+            <a class="project-link" href="mrf-asrs.html">
+                <article class="project">
+                    <header>
+                        <h4>MRF Ankenpally — 5-Deep 9-Level ASRS</h4>
+                        <span class="tag">2024 · Distributed Systems · Hardware Integration</span>
+                    </header>
+                    <p>Dense 5-deep 9-level automated storage &amp; retrieval system with third-party hardware integration; 500+ daily transactions, UAT accelerated 200%.</p>
+                    <span class="project-cta">Read deep-dive →</span>
+                </article>
+            </a>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <p>© <span id="year"></span> Rahul Maurya</p>
+    </footer>
+    <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+    <script src="../js/theme.js" defer></script>
+</body>
+
+</html>

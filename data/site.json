@@ -1,0 +1,38 @@
+{
+  "_doc": "Canonical content for the portfolio. Edit this file to update contact info, metrics, and other hydrated fields. Loaded at runtime by js/site.js and applied to any element with data-bind / data-bind-href attributes. If this file fails to load, the HTML fallback text remains visible (nothing breaks).",
+  "_version": 1,
+  "_lastUpdated": "2026-04-19",
+
+  "owner": {
+    "name": "Rahul Maurya",
+    "title": "Software Engineer",
+    "location": "Melbourne, Australia",
+    "email": "maurya2811@gmail.com",
+    "emailMailto": "mailto:maurya2811@gmail.com",
+    "phone": "+91 79054 96720",
+    "phoneTel": "tel:+917905496720",
+    "linkedin": "https://www.linkedin.com/in/rahul-maurya-277069227",
+    "github": "https://github.com/Maurya2811",
+    "leetcode": "https://leetcode.com/Rahul_2811/",
+    "gfg": "https://auth.geeksforgeeks.org/user/maurya2811",
+    "resumePdf": "resume/Rahul_Maurya.pdf"
+  },
+
+  "metrics": {
+    "latencyDelta": "25%",
+    "eventsPerMin": "10K+",
+    "uptime": "99.8%",
+    "clientRevenue": "1.2M AUD",
+    "microservices": "12+",
+    "gtpThroughput": "800 → 1,200 totes/hr",
+    "llmAutoResolve": "95%+",
+    "ticketReduction": "40%",
+    "dashboardMigration": "8 hrs → 20 min",
+    "mrfUatSpeedup": "6+ wks → 3 wks",
+    "lenskartTravelCut": "15%",
+    "lenskartLatencyCut": "200 ms",
+    "lenskartThroughputGain": "12%",
+    "movuCaptureRate": "99.9%",
+    "movuDiagnosisCut": "70%"
+  }
+}

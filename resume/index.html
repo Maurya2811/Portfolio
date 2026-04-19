@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resume — Rahul Maurya</title>
+    <meta name="description" content="Rahul Maurya — Software Engineer resume. Java, Spring Boot, Microservices, Distributed Systems.">
+    <link rel="icon" href="../favicon.ico?v=3">
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+    <script>try{var t=localStorage.getItem('rm-theme');document.documentElement.setAttribute('data-theme',t==='light'?'light':'dark');}catch(e){}</script>
+    <style>
+        .resume-doc { max-width: 820px; margin: 0 auto; padding: 56px 32px 80px; }
+        .resume-doc h1 { font-size: 34px; margin: 0 0 4px; }
+        .resume-doc .contact-line { color: var(--muted); font-size: 14px; margin-bottom: 28px; }
+        .resume-doc h2 { font-size: 14px; color: var(--accent); font-family: 'JetBrains Mono', monospace; letter-spacing: 1.5px; text-transform: uppercase; margin: 28px 0 10px; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
+        .resume-doc h3 { font-size: 16px; margin: 14px 0 2px; font-weight: 700; }
+        .resume-doc .role-meta { display: flex; justify-content: space-between; flex-wrap: wrap; color: var(--muted); font-size: 13px; margin-bottom: 6px; font-family: 'JetBrains Mono', monospace; }
+        .resume-doc ul { margin: 4px 0 10px; padding-left: 20px; color: var(--muted); font-size: 14.5px; }
+        .resume-doc ul li { margin-bottom: 4px; }
+        .resume-doc strong { color: var(--text); }
+        .resume-actions { display: flex; gap: 10px; margin: 20px 0 30px; flex-wrap: wrap; }
+        @media print {
+          .nav, .footer, .resume-actions { display: none !important; }
+          body { background: white !important; color: #111 !important; }
+          .resume-doc { color: #111; }
+          .resume-doc h2 { color: #0a6b4a; border-color: #ccc; }
+          .resume-doc ul, .resume-doc .role-meta, .resume-doc .contact-line { color: #333; }
+          .resume-doc strong { color: #000; }
+        }
+    </style>
+</head>
+
+<body>
+    <header class="nav">
+        <a href="../" class="brand">RM<span>.</span></a>
+        <nav>
+            <a href="../#about">About</a>
+            <a href="../#skills">Skills</a>
+            <a href="../#experience">Experience</a>
+            <a href="../projects/">Projects</a>
+            <a href="../#contact">Contact</a>
+        </nav>
+        <a class="nav-cta" href="Rahul_Maurya.pdf" target="_blank" rel="noopener">Download PDF</a>
+    </header>
+
+    <main class="resume-doc">
+        <h1>Rahul Maurya</h1>
+        <p class="contact-line">
+            Software Engineer · Melbourne, Australia · +91-7905496720 ·
+            <a href="mailto:maurya2811@gmail.com">maurya2811@gmail.com</a> ·
+            <a href="https://www.linkedin.com/in/rahul-maurya-277069227" target="_blank" rel="noopener">LinkedIn</a> ·
+            <a href="https://github.com/Maurya2811" target="_blank" rel="noopener">GitHub</a>
+        </p>
+        <div class="resume-actions">
+            <a class="btn btn-primary" href="Rahul_Maurya.pdf" target="_blank" rel="noopener">Download PDF</a>
+            <a class="btn" href="javascript:window.print()">Print / Save as PDF</a>
+        </div>
+
+        <h2>Summary</h2>
+        <p>Software Engineer with 2+ years designing and shipping distributed, event-driven backend
+           systems in Java, Spring Boot and Microservices for large-scale warehouse automation
+           (WCS / WMS / ASRS). Proven record of reducing API latency, scaling event processing to
+           10K+ events/min, and delivering measurable business impact (1.2M AUD client revenue,
+           99.8% uptime).</p>
+
+        <h2>Technical Skills</h2>
+        <ul>
+            <li><strong>Languages:</strong> Java (Core/J2SE), SQL, Python</li>
+            <li><strong>Frameworks:</strong> Spring Boot, Spring JPA, REST APIs, Microservices, Multithreading, Event-Driven Design</li>
+            <li><strong>Messaging / Cache:</strong> RabbitMQ, Apache Kafka, Redis</li>
+            <li><strong>Databases:</strong> MySQL, MSSQL, MongoDB</li>
+            <li><strong>DevOps:</strong> Docker, Kubernetes, Helm, Jenkins, Git, CI/CD</li>
+            <li><strong>Observability:</strong> Grafana, Jaeger, Distributed Logging</li>
+            <li><strong>Concepts:</strong> System Design, Distributed Systems, Data Pipelining, LLM Agents, Scalability, Performance Tuning</li>
+        </ul>
+
+        <h2>Experience</h2>
+
+        <h3>Addverb Australia — Software Engineer</h3>
+        <p class="role-meta"><span>Melbourne, Australia</span><span>Jan 2026 – Present</span></p>
+        <ul>
+            <li>Lifted GTP picking throughput <strong>800 → 1,200 totes/hr (+50%)</strong> by diagnosing software and process bottlenecks in live operations.</li>
+            <li>Architected distributed observability on message brokers + NoSQL to surface cross-service irregular events.</li>
+            <li>Closed the <strong>1,800 totes/hr SLA</strong> gap, unlocking <strong>1.2M AUD</strong> in client revenue.</li>
+            <li>Segregated business flows and maximised automation utilisation; <strong>+30%</strong> client operational efficiency.</li>
+        </ul>
+
+        <h3>Addverb Technologies — Software Development Engineer</h3>
+        <p class="role-meta"><span>Noida, India</span><span>Apr 2024 – Dec 2025</span></p>
+        <ul>
+            <li>Architected scalable microservices in Java, Spring Boot, RabbitMQ, Docker, Kubernetes for a distributed WCS; <strong>99.8% uptime</strong> via Jenkins/Git CI/CD.</li>
+            <li>Decomposed a monolith into <strong>12+ microservices</strong>; API latency <strong>800ms → 600ms</strong> (+25% perf).</li>
+            <li>Real-time MongoDB pipeline processing <strong>10,000+ events/min</strong> with zero data loss.</li>
+            <li>Built an <strong>LLM-powered inventory agent</strong> auto-resolving 95%+ queries; −40% support tickets.</li>
+            <li>Grafana dashboard migration automated in Python: <strong>8 hrs → 20 min (−95%)</strong>, 50+ dashboards, 3 environments.</li>
+            <li>Shipped observability dashboards and hardware health checks; <strong>−60%</strong> incident response time.</li>
+        </ul>
+
+        <h3>NEC Corporation India — Software Engineering Intern</h3>
+        <p class="role-meta"><span>Noida, India</span><span>Oct 2023 – Jan 2024</span></p>
+        <ul>
+            <li>Built microservice components in Java + Spring Boot; contributed to production-grade features and internal tooling.</li>
+        </ul>
+
+        <h2>Projects</h2>
+        <h3>Maersk · Adidas — Warehouse Automation Platform</h3>
+        <ul>
+            <li>12+ Spring Boot microservices (WES, auction, decanting, packing, returns, robotic-arm, boxit, quadron, multipro) on Kubernetes/Helm.</li>
+            <li>Event-driven observability on RabbitMQ + MongoDB; 99.8% uptime; 10K+ events/min.</li>
+        </ul>
+        <h3>UPS Healthcare — Movu Robotic Shuttle Integration</h3>
+        <ul>
+            <li>Unified 50+ Movu shuttles + lifts with ASRS; MongoDB telemetry pipeline at <strong>99.9%</strong> capture; <strong>−70%</strong> downtime diagnosis.</li>
+        </ul>
+        <h3>Lenskart — Tote Movement Optimization</h3>
+        <ul>
+            <li>Java graph/pathfinding service (Dijkstra + K-shortest): <strong>−15%</strong> travel time, <strong>−200ms</strong> latency, <strong>+12%</strong> throughput.</li>
+        </ul>
+        <h3>MRF Ankenpally — 5-Deep 9-Level ASRS</h3>
+        <ul>
+            <li>Production ASRS with third-party hardware integration; <strong>500+</strong> daily transactions; UAT <strong>6+ wks → 3 wks</strong>; ~₹15L saved.</li>
+        </ul>
+        <h3>Reliance Retail — VF-Manual WMS</h3>
+        <ul>
+            <li>Led end-to-end WMS delivery; resolved <strong>70+</strong> UAT-critical defects; 14 leadership demos; formal PM appreciation.</li>
+        </ul>
+
+        <h2>Education</h2>
+        <h3>B.Tech, Computer Science &amp; Engineering</h3>
+        <p class="role-meta"><span>Raj Kumar Goel Institute of Technology, Ghaziabad (AKTU)</span><span>2020 – 2024 · CGPA 8.67</span></p>
+
+        <h2>Achievements</h2>
+        <ul>
+            <li>Formal <strong>Note of Appreciation</strong> from PM for Reliance VF-Manual delivery.</li>
+            <li>Unlocked <strong>1.2M AUD</strong> client revenue via SLA remediation at Addverb Australia.</li>
+            <li>Accelerated cross-functional milestones <strong>90%+</strong> through QA/process collaboration.</li>
+        </ul>
+    </main>
+
+    <footer class="footer"><p>© <span id="year"></span> Rahul Maurya</p></footer>
+    <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+    <script src="../js/theme.js" defer></script>
+</body>
+
+</html>

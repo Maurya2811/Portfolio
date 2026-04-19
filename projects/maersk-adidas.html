@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maersk · Adidas Warehouse Automation — Rahul Maurya</title>
+    <meta name="description" content="Deep-dive into the Maersk-Adidas multi-tenant warehouse automation platform: WES, auction, decanting, packing, returns, robotic arm, boxit, quadron, multipro on Kubernetes.">
+    <link rel="icon" href="../favicon.ico?v=3">
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+    <script>try{var t=localStorage.getItem('rm-theme');document.documentElement.setAttribute('data-theme',t==='light'?'light':'dark');}catch(e){}</script>
+</head>
+
+<body>
+    <header class="nav">
+        <a href="../" class="brand">RM<span>.</span></a>
+        <nav>
+            <a href="../#about">About</a>
+            <a href="../#skills">Skills</a>
+            <a href="../#experience">Experience</a>
+            <a href="./">Projects</a>
+            <a href="../#contact">Contact</a>
+        </nav>
+        <a class="nav-cta" href="../resume/Rahul_Maurya.pdf" target="_blank" rel="noopener">Resume</a>
+    </header>
+
+    <main class="detail-wrap">
+        <p class="breadcrumb"><a href="../">home</a> / <a href="./">projects</a> / maersk-adidas</p>
+
+        <div class="detail-header">
+            <p class="subtitle">Warehouse Automation · 2025 · Addverb Technologies</p>
+            <h1>Maersk · Adidas — Warehouse Automation Platform</h1>
+            <p class="lede">
+                A multi-tenant Warehouse Execution &amp; Control System (WES/WCS) for the Maersk-operated
+                Adidas distribution centre — orchestrating 12+ Spring Boot microservices that run the entire
+                inbound-to-outbound flow: decanting, storage, picking, auction-based order allocation,
+                robotic-arm induction, packing, returns and dispatch.
+            </p>
+        </div>
+
+        <div class="meta-grid">
+            <div><span>Role</span>Software Development Engineer</div>
+            <div><span>Timeline</span>2025</div>
+            <div><span>Team</span>Cross-functional (Backend, QA, DevOps, Product)</div>
+            <div><span>Scale</span>12+ services · 10K+ events/min · 99.8% uptime</div>
+        </div>
+
+        <section class="detail-section">
+            <h2>Problem</h2>
+            <p>
+                Maersk — operating the Adidas DC — needed a single, multi-tenant automation platform
+                that could orchestrate heterogeneous subsystems (conveyors, AMRs, robotic arms, GTP
+                stations, packing lines) behind a unified API and SSO. The existing stack was
+                partly monolithic, hard to deploy per-site, and lacked cross-service observability for
+                irregular events that blocked throughput SLAs.
+            </p>
+        </section>
+
+        <section class="detail-section">
+            <h2>My Contribution</h2>
+            <ul>
+                <li>Architected and shipped features across <strong>Adidas WES, Auction, Decanting,
+                    Packing, Returns, Robotic-Arm, BoxIt, Quadron, Multipro, SSO and Outbound</strong>
+                    services — owning end-to-end feature flow from design to production.</li>
+                <li>Decomposed monolithic logic into <strong>12+ loosely coupled Spring Boot microservices</strong>,
+                    dropping API p95 latency from <strong>800ms → 600ms</strong>.</li>
+                <li>Designed an <strong>event-driven observability layer</strong> on RabbitMQ + MongoDB
+                    that captures irregular events (stuck totes, handoff failures, hardware timeouts)
+                    across services for RCA and SLA tracking.</li>
+                <li>Standardised Helm-based deployments across environments (prod/UAT/SIT/BV) — aligned
+                    the Adidas repo to the UPS-pattern to unify CI/CD for all client sites.</li>
+                <li>Collaborated in Scrum with QA, DevOps and Product; delivered features under live
+                    production constraints with zero data loss.</li>
+            </ul>
+        </section>
+
+        <section class="detail-section">
+            <h2>Tech Stack</h2>
+            <ul class="stack-row">
+                <li>Java 17</li><li>Spring Boot</li><li>Spring JPA</li><li>REST</li>
+                <li>RabbitMQ</li><li>MongoDB</li><li>MySQL</li><li>MSSQL</li>
+                <li>Docker</li><li>Kubernetes</li><li>Helm</li><li>Jenkins</li>
+                <li>Grafana</li><li>Jaeger</li><li>Nexus</li>
+            </ul>
+        </section>
+
+        <section class="detail-section">
+            <h2>High-Level Design (HLD)</h2>
+            <div class="diagram">
+                <pre class="mermaid">
+flowchart LR
+  UI["Adidas Frontend (React)"] --> GW["API Gateway / SSO"]
+  GW --> WES["WES<br/>(Warehouse Execution)"]
+  WES --> AUC["Auction<br/>Service"]
+  WES --> DEC["Decanting"]
+  WES --> PCK["Packing"]
+  WES --> RET["Returns"]
+  WES --> RA["Robotic Arm"]
+  WES --> BOX["BoxIt<br/>(Location Strategy)"]
+  WES --> MPR["Multipro"]
+  WES --> QDR["Quadron"]
+  WES --> OUT["Outbound"]
+  WES --> VEL["Veloce"]
+
+  subgraph MB["Message Bus"]
+    RMQ[(RabbitMQ)]
+  end
+
+  AUC --- RMQ
+  DEC --- RMQ
+  PCK --- RMQ
+  RET --- RMQ
+  RA --- RMQ
+  BOX --- RMQ
+  MPR --- RMQ
+  QDR --- RMQ
+  OUT --- RMQ
+
+  RMQ --> EVT["Event Store<br/>(MongoDB)"]
+  WES --> DB[(MySQL / MSSQL)]
+  EVT --> OBS["Grafana + Jaeger<br/>Dashboards"]
+                </pre>
+            </div>
+            <div class="callout">
+                <strong>Design rationale:</strong> every subsystem owns its own DB and contract; cross-service
+                side-effects flow through RabbitMQ topics so services fail independently. A parallel
+                event-store in MongoDB gives operators a second "source of truth" for irregular events
+                without touching transactional stores.
+            </div>
+        </section>
+
+        <section class="detail-section">
+            <h2>Low-Level Design — Order Fulfilment Flow</h2>
+            <div class="diagram">
+                <pre class="mermaid">
+sequenceDiagram
+  autonumber
+  participant U as Operator (UI)
+  participant G as SSO + Gateway
+  participant W as WES
+  participant A as Auction
+  participant B as BoxIt
+  participant R as Robotic Arm
+  participant P as Packing
+  participant Q as RabbitMQ
+  participant M as MongoDB Event Store
+
+  U->>G: POST /orders (JWT)
+  G->>W: createOrder()
+  W->>A: allocate(order)
+  A-->>W: allocation plan
+  W->>Q: publish order.allocated
+  Q->>B: consume → pick slot
+  B->>R: trigger induction
+  R-->>Q: publish arm.completed
+  Q->>P: consume → pack
+  P-->>Q: publish pack.completed
+  Q->>M: persist lifecycle events
+  W-->>U: order status (WS / poll)
+                </pre>
+            </div>
+        </section>
+
+        <section class="detail-section">
+            <h2>Impact</h2>
+            <ul>
+                <li><strong>99.8% uptime</strong> across production environments.</li>
+                <li>Backend performance <strong>+25%</strong>; API latency <strong>800ms → 600ms</strong>.</li>
+                <li>Real-time pipeline processing <strong>10,000+ events/min</strong> with zero data loss.</li>
+                <li>LLM-backed inventory agent resolving <strong>95%+</strong> of operator queries,
+                    cutting support tickets <strong>40%</strong>.</li>
+                <li>Grafana dashboard migration automated — <strong>8 hrs → 20 min</strong> across 3 network
+                    environments, 50+ dashboards.</li>
+            </ul>
+        </section>
+
+        <section class="detail-section">
+            <h2>Key Learnings</h2>
+            <ul>
+                <li>Multi-tenant Helm patterns pay off only if every client repo shares the same value
+                    contract — aligning Adidas to the UPS Helm pattern unlocked reusable CI/CD.</li>
+                <li>Event-driven observability beats log-grep when subsystems cross process boundaries;
+                    a dedicated event store is cheap insurance.</li>
+                <li>Throughput SLAs are won at the seams between services, not inside any one service.</li>
+            </ul>
+        </section>
+
+        <p class="breadcrumb"><a href="./">← back to projects</a></p>
+    </main>
+
+    <footer class="footer"><p>© <span id="year"></span> Rahul Maurya</p></footer>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+    <script src="../js/theme.js" defer></script>
+</body>
+
+</html>

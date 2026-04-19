@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MRF Ankenpally · 5-Deep 9-Level ASRS — Rahul Maurya</title>
+    <meta name="description" content="Dense 5-deep 9-level Automated Storage & Retrieval System for MRF Ankenpally manufacturing plant — Java microservices with third-party hardware integration.">
+    <link rel="icon" href="../favicon.ico?v=3">
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+    <script>try{var t=localStorage.getItem('rm-theme');document.documentElement.setAttribute('data-theme',t==='light'?'light':'dark');}catch(e){}</script>
+</head>
+
+<body>
+    <header class="nav">
+        <a href="../" class="brand">RM<span>.</span></a>
+        <nav>
+            <a href="../#about">About</a>
+            <a href="../#skills">Skills</a>
+            <a href="../#experience">Experience</a>
+            <a href="./">Projects</a>
+            <a href="../#contact">Contact</a>
+        </nav>
+        <a class="nav-cta" href="../resume/Rahul_Maurya.pdf" target="_blank" rel="noopener">Resume</a>
+    </header>
+
+    <main class="detail-wrap">
+        <p class="breadcrumb"><a href="../">home</a> / <a href="./">projects</a> / mrf-asrs</p>
+
+        <div class="detail-header">
+            <p class="subtitle">ASRS · 2024 · Addverb Technologies · Ankenpally, Hyderabad</p>
+            <h1>MRF — 5-Deep 9-Level ASRS Solution</h1>
+            <p class="lede">
+                Delivered a dense 5-deep, 9-level Automated Storage &amp; Retrieval System for MRF's
+                high-volume tyre manufacturing plant — Java-based microservices orchestrating
+                cranes, shuttles and third-party hardware behind a unified WCS.
+            </p>
+        </div>
+
+        <div class="meta-grid">
+            <div><span>Role</span>Software Development Engineer</div>
+            <div><span>Timeline</span>2024</div>
+            <div><span>Scale</span>500+ daily transactions</div>
+            <div><span>Impact</span>UAT 6+ wks → 3 wks · ~₹15L saved</div>
+        </div>
+
+        <section class="detail-section">
+            <h2>Problem</h2>
+            <p>
+                MRF's plant required a high-density ASRS: 5 pallets deep × 9 levels high, fed by
+                heterogeneous third-party hardware (cranes, shuttles, conveyors) with strict put-away
+                and retrieval SLAs. The integration surface area was large and client timelines were tight.
+            </p>
+        </section>
+
+        <section class="detail-section">
+            <h2>My Contribution</h2>
+            <ul>
+                <li>Architected the Java backend and microservice communication layer for the 5-deep
+                    9-level ASRS; owned <strong>third-party hardware integration</strong> across
+                    cranes, shuttles and conveyors.</li>
+                <li>Partnered with QA and Process teams to compress internal UAT from
+                    <strong>6+ weeks to 3 weeks (+200%)</strong>.</li>
+                <li>Resolved <strong>20+ client-reported defects</strong> during UAT; shipped a
+                    production ASRS supporting <strong>500+ daily transactions</strong>.</li>
+                <li>Built SOPs and client interface docs for the hardware integration surface.</li>
+            </ul>
+        </section>
+
+        <section class="detail-section">
+            <h2>Tech Stack</h2>
+            <ul class="stack-row">
+                <li>Java</li><li>Spring Boot</li><li>Microservices</li><li>REST</li>
+                <li>RabbitMQ</li><li>MySQL</li><li>Grafana</li>
+            </ul>
+        </section>
+
+        <section class="detail-section">
+            <h2>High-Level Design</h2>
+            <div class="diagram">
+                <pre class="mermaid">
+flowchart LR
+  WMS["WMS / ERP"] --> WCS["WCS Orchestrator<br/>(Spring Boot)"]
+  WCS --> INV["Inventory<br/>Service"]
+  WCS --> LOC["Location<br/>Strategy"]
+  WCS --> CR["Crane Controller"]
+  WCS --> SH["Shuttle Controller"]
+  WCS --> CV["Conveyor Controller"]
+  CR <--> HW1["Crane HW"]
+  SH <--> HW2["Shuttle HW"]
+  CV <--> HW3["Conveyor HW"]
+  WCS --> Q[(RabbitMQ)]
+  Q --> AUD[("Audit / Events<br/>(MySQL)")]
+  WCS --> DASH["Grafana"]
+                </pre>
+            </div>
+        </section>
+
+        <section class="detail-section">
+            <h2>Low-Level Design — Put-Away for 5-Deep Lane</h2>
+            <div class="diagram">
+                <pre class="mermaid">
+sequenceDiagram
+  autonumber
+  participant W as WMS
+  participant O as WCS Orchestrator
+  participant L as Location Strategy
+  participant C as Crane Controller
+  participant S as Shuttle Controller
+  participant I as Inventory
+
+  W->>O: putAway(pallet, SKU, qty)
+  O->>L: pickLocation(SKU, depth=5, level=9)
+  L-->>O: aisle/level/depth slot
+  O->>C: moveTo(slot)
+  C-->>O: cranePositioned
+  O->>S: push(pallet, depth)
+  S-->>O: storedAtDepth
+  O->>I: commit(slot, pallet)
+  I-->>O: ok
+  O-->>W: putAway.completed
+                </pre>
+            </div>
+            <div class="callout">
+                <strong>Why 5-deep is hard:</strong> retrieval of a rear pallet requires temporarily
+                evacuating the front ones — location strategy must balance FIFO, SKU affinity and
+                re-handling cost. We encoded this as a scored candidate set before committing a slot.
+            </div>
+        </section>
+
+        <section class="detail-section">
+            <h2>Impact</h2>
+            <ul>
+                <li>Production ASRS handling <strong>500+ daily transactions</strong>.</li>
+                <li>UAT accelerated <strong>200%</strong> (6+ wks → 3 wks), saving ~<strong>₹15L</strong>
+                    in operational cost.</li>
+                <li>100% client sign-off; 20+ UAT defects resolved.</li>
+            </ul>
+        </section>
+
+        <p class="breadcrumb"><a href="./">← back to projects</a></p>
+    </main>
+
+    <footer class="footer"><p>© <span id="year"></span> Rahul Maurya</p></footer>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+    <script src="../js/theme.js" defer></script>
+</body>
+
+</html>
