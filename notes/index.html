@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Engineering Notes — Rahul Maurya</title>
+    <meta name="description" content="Short engineering notes by Rahul Maurya on messaging reliability, throughput and distributed backend systems.">
+    <link rel="canonical" href="https://maurya2811.github.io/Portfolio/notes/">
+    <meta property="og:image" content="https://maurya2811.github.io/Portfolio/images/og-card.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta property="og:title" content="Engineering Notes — Rahul Maurya">
+    <meta property="og:description" content="Short write-ups on messaging reliability, throughput and distributed backend systems.">
+    <meta property="og:type" content="website">
+    <link rel="icon" href="../favicon.ico?v=3">
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+    <script>try{var t=localStorage.getItem('rm-theme');document.documentElement.setAttribute('data-theme',t==='light'?'light':'dark');}catch(e){}</script>
+</head>
+
+<body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="nav">
+        <a href="../" class="brand">RM<span>.</span></a>
+        <nav aria-label="Primary">
+            <a href="../#about">About</a>
+            <a href="../#experience">Experience</a>
+            <a href="../projects/">Case Studies</a>
+            <a href="./">Notes</a>
+            <a href="../#contact">Contact</a>
+        </nav>
+        <a class="nav-cta" href="../resume/">Resume</a>
+    </header>
+
+    <main id="main" class="detail-wrap">
+        <p class="breadcrumb"><a href="../">home</a> / notes</p>
+
+        <div class="detail-header">
+            <p class="subtitle">Writing</p>
+            <h1>Engineering Notes</h1>
+            <p class="lede">Short, practical write-ups on problems I have worked on in production backend systems.</p>
+        </div>
+
+        <ul class="note-list">
+            <li>
+                <a href="at-least-once-rabbitmq.html">
+                    <h4>At-least-once delivery on RabbitMQ: idempotent consumers, DLQ and replay</h4>
+                    <p>Why "exactly once" is the wrong goal, and the three pieces that make at-least-once safe.</p>
+                </a>
+            </li>
+            <li>
+                <a href="finding-the-real-bottleneck.html">
+                    <h4>Finding the real bottleneck in a goods-to-person system</h4>
+                    <p>Dwell time per stage, Little's law, and why adding pods doesn't fix an allocation policy.</p>
+                </a>
+            </li>
+        </ul>
+    </main>
+
+    <footer class="footer">
+        <p>© <span id="year">2026</span> Rahul Maurya</p>
+    </footer>
+
+    <script src="../js/theme.js" defer></script>
+    <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+</body>
+
+</html>

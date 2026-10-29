@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deep-Lane ASRS Control · Case Study — Rahul Maurya</title>
+    <meta name="description" content="Case study: Java/Spring Boot control for a 5-deep, 9-level automated storage and retrieval system with third-party cranes, shuttles, duplex lifts and conveyors; interface testing cut from 3 months to 3 weeks.">
+    <link rel="canonical" href="https://maurya2811.github.io/Portfolio/projects/deep-lane-asrs.html">
+    <meta property="og:image" content="https://maurya2811.github.io/Portfolio/images/og-card.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta property="og:title" content="Deep-Lane ASRS Control — Rahul Maurya">
+    <meta property="og:description" content="5-deep, 9-level ASRS orchestration: 500+ daily transactions, interface testing 3 months to 3 weeks.">
+    <meta property="og:type" content="article">
+    <link rel="icon" href="../favicon.ico?v=3">
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+    <script>try{var t=localStorage.getItem('rm-theme');document.documentElement.setAttribute('data-theme',t==='light'?'light':'dark');}catch(e){}</script>
+</head>
+
+<body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="nav">
+        <a href="../" class="brand">RM<span>.</span></a>
+        <nav aria-label="Primary">
+            <a href="../#about">About</a>
+            <a href="../#experience">Experience</a>
+            <a href="./">Case Studies</a>
+            <a href="../notes/">Notes</a>
+            <a href="../#contact">Contact</a>
+        </nav>
+        <a class="nav-cta" href="../resume/">Resume</a>
+    </header>
+
+    <main id="main" class="detail-wrap">
+        <p class="breadcrumb"><a href="../">home</a> / <a href="./">case studies</a> / deep-lane-asrs</p>
+
+        <div class="detail-header">
+            <p class="subtitle">Hardware Integration · Oct 2024 – May 2025 · Addverb Technologies</p>
+            <h1>Deep-Lane ASRS Control (5-deep, 9-level)</h1>
+            <p class="lede">
+                Backend control for a high-density automated storage and retrieval system at a tyre
+                manufacturing plant in India: pallets stored five deep across nine levels, moved by
+                third-party cranes, shuttles, duplex lifts and conveyors, all orchestrated by a Java
+                Warehouse Control System (WCS).
+            </p>
+        </div>
+
+        <p class="disclaimer">
+            Simplified reference architecture written from memory for discussion. Client identity,
+            hardware vendors, service names, slotting parameters, configuration and code are
+            deliberately omitted or generalised.
+        </p>
+
+        <div class="meta-grid">
+            <div><span>Role</span>Software Development Engineer</div>
+            <div><span>Scale</span>500+ daily transactions</div>
+            <div><span>Interface testing</span>3 months → 3 weeks</div>
+            <div><span>UAT</span>~2x faster (6+ wks → 3 wks)</div>
+        </div>
+
+        <section class="detail-section">
+            <h2>Context</h2>
+            <p>
+                Deep-lane storage packs more pallets into the same footprint by placing them one behind
+                another, here up to five deep on each of nine levels. A crane or lift brings a shuttle to
+                the right level and lane, and the shuttle travels into the lane to store or fetch a pallet.
+                The hardware came from third-party vendors; our WCS had to coordinate all of it and keep
+                inventory exact.
+            </p>
+        </section>
+
+        <section class="detail-section">
+            <h2>Problem</h2>
+            <ul>
+                <li><strong>Deep lanes block access.</strong> Getting a pallet at the back of a lane means first
+                    relocating the pallets in front of it, so a bad put-away decision costs extra moves later.</li>
+                <li><strong>Many hardware interfaces.</strong> Cranes, shuttles, duplex lifts and conveyors each had
+                    their own controller and interface, and every hand-off between them had to be exact.</li>
+                <li><strong>Tight timeline.</strong> Interface development and testing with the client was on track to
+                    take about three months.</li>
+            </ul>
+        </section>
+
+        <section class="detail-section">
+            <h2>What I did</h2>
+            <ul>
+                <li><strong>Built WCS orchestration in Java / Spring Boot</strong> for put-away and retrieval:
+                    breaking each task into crane, lift, shuttle and conveyor steps, sending commands over the
+                    message bus, and committing inventory only after the hardware confirms.</li>
+                <li><strong>Implemented scored slot selection.</strong> For each put-away, candidate slots are scored
+                    on FIFO order, SKU affinity (same SKU in the same lane) and expected re-handling cost, and the
+                    best candidate wins. This keeps rear-of-lane retrievals rare.</li>
+                <li><strong>Handled blocked retrievals.</strong> When the target pallet is behind others, the WCS plans
+                    relocation moves for the front pallets first, then the retrieval, and updates inventory at each step.</li>
+                <li><strong>Unblocked the QA and Process teams</strong> by helping finish interface development and
+                    testing. Client interface testing went from <strong>3 months to 3 weeks</strong> and the UAT
+                    cycle from 6+ weeks to 3 weeks. I resolved 20+ UAT defects along the way.</li>
+            </ul>
+        </section>
+
+        <section class="detail-section">
+            <h2>Reference architecture</h2>
+            <div class="diagram">
+                <pre class="mermaid">
+flowchart LR
+  HOST["Host WMS / ERP"] -->|put-away, retrieval| WCS["WCS Orchestrator"]
+  WCS --> SLOT["Slot Selection"]
+  WCS --> INV["Inventory Service"]
+  WCS <--> MQ[("RabbitMQ")]
+  MQ <--> CR["Crane Adapter"]
+  MQ <--> LF["Duplex Lift Adapter"]
+  MQ <--> SH["Shuttle Adapter"]
+  MQ <--> CV["Conveyor Adapter"]
+  CR --> HW1["Crane controllers"]
+  LF --> HW2["Lift controllers"]
+  SH --> HW3["Shuttle controllers"]
+  CV --> HW4["Conveyor PLCs"]
+  INV --> DB[("MySQL")]
+  WCS --> DASH["Grafana"]
+                </pre>
+            </div>
+            <p class="callout">
+                <strong>Why 5-deep is hard:</strong> storage density and access cost pull in opposite directions.
+                Each put-away decision changes how many relocation moves a future retrieval will need, so slot
+                selection has to look ahead, not just find an empty slot.
+            </p>
+        </section>
+
+        <section class="detail-section">
+            <h2>Low-level flow — retrieval from the back of a lane</h2>
+            <div class="diagram">
+                <pre class="mermaid">
+sequenceDiagram
+  autonumber
+  participant H as Host WMS
+  participant W as WCS Orchestrator
+  participant S as Slot Selection
+  participant C as Crane / Lift
+  participant SH as Shuttle
+  participant I as Inventory
+  H->>W: retrieve(pallet)
+  W->>I: locate pallet (lane, depth)
+  I-->>W: depth 4 of 5, 3 pallets in front
+  loop for each blocking pallet
+    W->>S: choose relocation slot
+    S-->>W: best-scored slot
+    W->>C: position at lane
+    W->>SH: move blocking pallet
+    SH-->>W: done
+    W->>I: commit relocation
+  end
+  W->>SH: retrieve target pallet
+  SH-->>W: done
+  W->>I: commit retrieval
+  W-->>H: retrieval.completed
+                </pre>
+            </div>
+        </section>
+
+        <section class="detail-section">
+            <h2>Trade-offs</h2>
+            <div class="table-wrap">
+                <table class="tradeoffs">
+                    <thead><tr><th>Decision</th><th>Chose</th><th>Over</th><th>Why</th></tr></thead>
+                    <tbody>
+                        <tr><td>Slot choice</td><td>Score a candidate set</td><td>First free slot</td><td>First-free is fast but causes many relocations later; scoring trades a little compute for far fewer moves</td></tr>
+                        <tr><td>Inventory commit</td><td>After hardware confirms each step</td><td>Optimistic commit on command</td><td>Hardware can fail mid-move; inventory must match what's physically in the lane</td></tr>
+                        <tr><td>Hardware integration</td><td>One adapter per device type over the bus</td><td>Orchestrator calling controllers directly</td><td>Isolates vendor interfaces and lets devices fail independently</td></tr>
+                        <tr><td>Relocation</td><td>Plan all blocking moves before starting</td><td>Decide move by move</td><td>A full plan can be checked for free capacity first, so a retrieval never stalls half-done</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="detail-section">
+            <h2>Failure modes I designed for</h2>
+            <ul>
+                <li><strong>Hardware fault mid-task:</strong> the task stops at the last confirmed step, inventory stays correct, and the task can be resumed or reversed.</li>
+                <li><strong>Duplicate or late confirmations:</strong> step confirmations are idempotent, so a repeated message does not move inventory twice.</li>
+                <li><strong>No free relocation slot:</strong> detected at planning time, and the retrieval is queued instead of started.</li>
+            </ul>
+        </section>
+
+        <section class="detail-section">
+            <h2>Impact</h2>
+            <ul>
+                <li>Production ASRS handling <strong>500+ daily transactions</strong>.</li>
+                <li>Client interface testing <strong>3 months → 3 weeks</strong>.</li>
+                <li>UAT cycle about <strong>2x faster</strong> (6+ weeks → 3 weeks); 20+ UAT defects resolved.</li>
+            </ul>
+        </section>
+
+        <section class="detail-section">
+            <h2>What I would do differently</h2>
+            <ul>
+                <li>Build hardware simulators for each device type early, so interface testing doesn't depend on site access.</li>
+                <li>Write the task state machine down as an explicit model from the start, which makes resume and reverse logic easier to test.</li>
+            </ul>
+        </section>
+
+        <section class="detail-section">
+            <div class="talking-points">
+                <h3>// interview talking points</h3>
+                <ol>
+                    <li>Storage density vs. access cost, and how slot scoring balances them.</li>
+                    <li>Keeping inventory consistent with the physical world when hardware can fail mid-move.</li>
+                    <li>Planning relocations for a blocked retrieval.</li>
+                    <li>How I helped cut interface testing from 3 months to 3 weeks.</li>
+                </ol>
+            </div>
+        </section>
+
+        <section class="detail-section">
+            <h2>Tech</h2>
+            <ul class="stack-row">
+                <li>Java 17</li><li>Spring Boot</li><li>Spring Data JPA</li><li>REST</li>
+                <li>RabbitMQ</li><li>MySQL</li><li>Docker</li><li>Grafana</li>
+            </ul>
+        </section>
+
+        <div class="page-nav">
+            <a href="tote-routing.html">← prev: tote routing</a>
+            <a href="grafana-migration.html">next: Grafana migration →</a>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <p>© <span id="year">2026</span> Rahul Maurya · Case studies are simplified and anonymised and contain no proprietary code or client data.</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js" integrity="sha384-WmdflGW9aGfoBdHc4rRyWzYuAjEmDwMdGdiPNacbwfGKxBW/SO6guzuQ76qjnSlr" crossorigin="anonymous" defer></script>
+    <script src="../js/theme.js" defer></script>
+    <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+</body>
+
+</html>

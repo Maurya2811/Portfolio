@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cross-Service Irregular-Event Observability · Case Study — Rahul Maurya</title>
+    <meta name="description" content="Case study: a uniform irregular-event envelope, async publishing over RabbitMQ and a MongoDB event store that turned multi-pod log grepping into one correlated query.">
+    <link rel="canonical" href="https://maurya2811.github.io/Portfolio/projects/event-observability.html">
+    <meta property="og:image" content="https://maurya2811.github.io/Portfolio/images/og-card.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta property="og:title" content="Cross-Service Irregular-Event Observability — Rahul Maurya">
+    <meta property="og:description" content="One correlated query instead of grepping pod logs: the evidence base for a +50% throughput improvement.">
+    <meta property="og:type" content="article">
+    <link rel="icon" href="../favicon.ico?v=3">
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+    <script>try{var t=localStorage.getItem('rm-theme');document.documentElement.setAttribute('data-theme',t==='light'?'light':'dark');}catch(e){}</script>
+</head>
+
+<body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="nav">
+        <a href="../" class="brand">RM<span>.</span></a>
+        <nav aria-label="Primary">
+            <a href="../#about">About</a>
+            <a href="../#experience">Experience</a>
+            <a href="./">Case Studies</a>
+            <a href="../notes/">Notes</a>
+            <a href="../#contact">Contact</a>
+        </nav>
+        <a class="nav-cta" href="../resume/">Resume</a>
+    </header>
+
+    <main id="main" class="detail-wrap">
+        <p class="breadcrumb"><a href="../">home</a> / <a href="./">case studies</a> / event-observability</p>
+
+        <div class="detail-header">
+            <p class="subtitle">Observability · Jan 2026 – Present · Addverb Australia</p>
+            <h1>Cross-Service Irregular-Event Observability</h1>
+            <p class="lede">
+                The design behind the <a href="retail-dc-platform.html">retail DC platform</a> throughput
+                work. Every service reports irregular events in one shared shape to a dedicated store. Root-cause
+                analysis went from grepping pod logs to a single correlated query.
+            </p>
+        </div>
+
+        <p class="disclaimer">
+            Simplified reference architecture written from memory for discussion. Client identity,
+            service names, topology, configuration and code are deliberately omitted or generalised.
+        </p>
+
+        <div class="meta-grid">
+            <div><span>Role</span>Designer and implementer</div>
+            <div><span>Pattern</span>Async event envelope + read-side store</div>
+            <div><span>Store</span>MongoDB, TTL retention</div>
+            <div><span>Outcome</span>Evidence base for +50% throughput</div>
+        </div>
+
+        <section class="detail-section">
+            <h2>Problem</h2>
+            <ul>
+                <li>A tote passes through several services (allocation, station, robot cell, pack) before it
+                    leaves the floor. Each service logged problems in its own format, in its own pods.</li>
+                <li>When a tote got stuck, nobody could answer the basic questions quickly: where did it wait,
+                    for how long, and why?</li>
+                <li>Kubernetes log retention is short, so the evidence from a bad shift was often gone by the
+                    time anyone looked.</li>
+            </ul>
+        </section>
+
+        <section class="detail-section">
+            <h2>The event envelope</h2>
+            <p>
+                Every service emits the same small document whenever something deviates from the happy path,
+                and at each stage boundary. Keeping the envelope uniform is what makes cross-service queries possible.
+            </p>
+            <div class="diagram">
+<pre><code>{
+  "eventId":       "uuid",
+  "correlationId": "order-or-tote-lifecycle-id",
+  "entityId":      "tote-id",
+  "sourceService": "station-service",
+  "stage":         "AT_STATION",
+  "reasonCode":    "PICK_TIMEOUT",
+  "severity":      "WARN",
+  "stageEnteredAt": "2026-03-02T10:14:07Z",
+  "ts":            "2026-03-02T10:16:41Z",
+  "attributes":    { "station": "S-03" }
+}</code></pre>
+            </div>
+            <p>
+                <code>reasonCode</code> comes from a shared enum, not free text, so it can be grouped and ranked.
+                <code>attributes</code> is the escape hatch for service-specific detail.
+            </p>
+        </section>
+
+        <section class="detail-section">
+            <h2>Reference architecture</h2>
+            <div class="diagram">
+                <pre class="mermaid">
+flowchart LR
+  subgraph SVC["Business services"]
+    A["Allocation"]
+    S["Station Service"]
+    R["Robot Cell Adapter"]
+    P["Pack Station"]
+  end
+  SVC -->|async publish| X[("Topic exchange: irregular.#")]
+  X --> Q["Dedicated queue"]
+  Q --> C["Irregular-Event Consumer"]
+  C -->|bulk insert| M[("MongoDB: irregular_events")]
+  C -. poison .-> DLQ["Dead-letter queue"]
+  M --> G["Grafana panels"]
+  M --> RCA["Ad-hoc RCA queries"]
+                </pre>
+            </div>
+            <ul>
+                <li><strong>Publish:</strong> a thin shared library builds the envelope and publishes it asynchronously to
+                    a topic exchange, with routing keys like <code>irregular.station.pick_timeout</code>. If publishing
+                    fails, it logs and moves on; it never throws into business code.</li>
+                <li><strong>Consume:</strong> one consumer service batches inserts into MongoDB. It writes with
+                    <code>eventId</code> as <code>_id</code>, so redelivered messages are harmless duplicates.</li>
+                <li><strong>Indexes:</strong> compound index <code>{correlationId: 1, ts: 1}</code> for lifecycle
+                    queries, <code>{reasonCode: 1, ts: -1}</code> for ranking, and a TTL index on <code>ts</code>
+                    for automatic retention.</li>
+            </ul>
+        </section>
+
+        <section class="detail-section">
+            <h2>Queries that answer real questions</h2>
+            <ul>
+                <li><strong>"What happened to this tote?"</strong> Find by <code>correlationId</code> sorted by
+                    <code>ts</code>, which gives the full cross-service timeline.</li>
+                <li><strong>"Where do totes wait?"</strong> An aggregation that filters a time window, computes
+                    <code>ts - stageEnteredAt</code> per event, groups by <code>stage</code> and returns count,
+                    average and p95 dwell. This one query showed that stations were being starved, not that they were slow.</li>
+                <li><strong>"What breaks most?"</strong> Group by <code>reasonCode</code> over the last shift, sorted by count.</li>
+            </ul>
+            <p>Grafana panels sit on the same queries: stuck totes (no stage change for N minutes), top reason codes per shift, and dwell time by stage.</p>
+        </section>
+
+        <section class="detail-section">
+            <h2>Trade-offs</h2>
+            <div class="table-wrap">
+                <table class="tradeoffs">
+                    <thead><tr><th>Decision</th><th>Chose</th><th>Over</th><th>Why</th></tr></thead>
+                    <tbody>
+                        <tr><td>Delivery guarantee</td><td>Best-effort async publish</td><td>Transactional outbox</td><td>Diagnostics must never slow or block the order path. A lost diagnostic event is acceptable here</td></tr>
+                        <tr><td>Store</td><td>MongoDB collection</td><td>Extra tables in the transactional SQL DB</td><td>No load on the hot path, flexible <code>attributes</code>, built-in TTL</td></tr>
+                        <tr><td>Event shape</td><td>One shared envelope plus enum reason codes</td><td>Per-service log formats</td><td>Cross-service grouping only works if every producer uses the same fields</td></tr>
+                        <tr><td>Retention</td><td>TTL index</td><td>Manual archival jobs</td><td>Nothing to operate; a fixed window covers RCA and trend needs</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="detail-section">
+            <h2>Failure modes I designed for</h2>
+            <ul>
+                <li><strong>Broker unavailable:</strong> the publisher drops the event and logs locally, so business flow continues.</li>
+                <li><strong>Consumer behind or down:</strong> events queue on the broker under a length limit, and the consumer catches up with batch inserts.</li>
+                <li><strong>Duplicates:</strong> <code>eventId</code> as <code>_id</code> makes inserts idempotent.</li>
+                <li><strong>Malformed events:</strong> they are rejected to a DLQ instead of blocking the queue.</li>
+            </ul>
+        </section>
+
+        <section class="detail-section">
+            <h2>Impact</h2>
+            <ul>
+                <li>Root-cause analysis went from grepping logs across several pods to <strong>one correlated query</strong>.</li>
+                <li>Stage-level dwell time was the <strong>evidence base</strong> for the allocation fixes that took
+                    picking from <strong>800 → 1,200 totes/hr (+50%)</strong>.</li>
+                <li>Shift reviews now start from a ranked reason-code list instead of anecdotes.</li>
+            </ul>
+        </section>
+
+        <section class="detail-section">
+            <h2>What I would do differently</h2>
+            <ul>
+                <li>Carry OpenTelemetry trace context in the envelope, so an irregular event links straight to its trace.</li>
+                <li>Version the envelope schema explicitly from the first release.</li>
+            </ul>
+        </section>
+
+        <section class="detail-section">
+            <div class="talking-points">
+                <h3>// interview talking points</h3>
+                <ol>
+                    <li>Why diagnostics are deliberately lossy-tolerant, and when I would switch to an outbox.</li>
+                    <li>How the indexes match the three query shapes, and why TTL beats archival jobs here.</li>
+                    <li>How dwell time per stage separates "slow" from "starved".</li>
+                    <li>How idempotent inserts make at-least-once delivery safe.</li>
+                </ol>
+            </div>
+        </section>
+
+        <section class="detail-section">
+            <h2>Tech</h2>
+            <ul class="stack-row">
+                <li>Java 17</li><li>Spring Boot</li><li>RabbitMQ</li><li>MongoDB</li>
+                <li>Kubernetes</li><li>Grafana</li>
+            </ul>
+        </section>
+
+        <div class="page-nav">
+            <a href="retail-dc-platform.html">← prev: retail DC platform</a>
+            <a href="llm-inventory-agent.html">next: LLM inventory assistant →</a>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <p>© <span id="year">2026</span> Rahul Maurya · Case studies are simplified and anonymised and contain no proprietary code or client data.</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js" integrity="sha384-WmdflGW9aGfoBdHc4rRyWzYuAjEmDwMdGdiPNacbwfGKxBW/SO6guzuQ76qjnSlr" crossorigin="anonymous" defer></script>
+    <script src="../js/theme.js" defer></script>
+    <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+</body>
+
+</html>

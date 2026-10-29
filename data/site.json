@@ -1,0 +1,22 @@
+{
+  "_doc": "Canonical contact/link content for the portfolio, hydrated at runtime by js/site.js into elements with data-bind / data-bind-href. HTML keeps the same values inline as fallback. Phone numbers are deliberately NOT here (they live in the private vault and only go into resume PDFs). Metrics are documented in AGENTS.md section 3.",
+  "_version": 2,
+  "_lastUpdated": "2026-10-29",
+
+  "owner": {
+    "name": "Rahul Maurya",
+    "title": "Software Engineer",
+    "headline": "Software Engineer · Backend & Distributed Systems",
+    "location": "Melbourne, Australia",
+    "availability": "Open to backend / platform engineering roles · Melbourne & remote",
+    "email": "maurya2811@gmail.com",
+    "emailMailto": "mailto:maurya2811@gmail.com",
+    "linkedin": "https://www.linkedin.com/in/rahul-maurya-277069227",
+    "github": "https://github.com/Maurya2811",
+    "leetcode": "https://leetcode.com/Rahul_2811/",
+    "gfg": "https://auth.geeksforgeeks.org/user/maurya2811",
+    "resumePage": "resume/",
+    "resumePdf": "resume/Rahul_Maurya.pdf",
+    "resumePdfIndia": "resume/Rahul_Maurya_India.pdf"
+  }
+}

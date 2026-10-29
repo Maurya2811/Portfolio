@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>At-least-once delivery on RabbitMQ — Rahul Maurya</title>
+    <meta name="description" content="Idempotent consumers, dead-letter queues and replay: making at-least-once delivery on RabbitMQ safe in Spring Boot services.">
+    <link rel="canonical" href="https://maurya2811.github.io/Portfolio/notes/at-least-once-rabbitmq.html">
+    <meta property="og:image" content="https://maurya2811.github.io/Portfolio/images/og-card.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta property="og:title" content="At-least-once delivery on RabbitMQ — Rahul Maurya">
+    <meta property="og:description" content="Idempotent consumers, DLQ and replay in Spring Boot services.">
+    <meta property="og:type" content="article">
+    <link rel="icon" href="../favicon.ico?v=3">
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+    <script>try{var t=localStorage.getItem('rm-theme');document.documentElement.setAttribute('data-theme',t==='light'?'light':'dark');}catch(e){}</script>
+</head>
+
+<body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="nav">
+        <a href="../" class="brand">RM<span>.</span></a>
+        <nav aria-label="Primary">
+            <a href="../#about">About</a>
+            <a href="../#experience">Experience</a>
+            <a href="../projects/">Case Studies</a>
+            <a href="./">Notes</a>
+            <a href="../#contact">Contact</a>
+        </nav>
+        <a class="nav-cta" href="../resume/">Resume</a>
+    </header>
+
+    <main id="main" class="detail-wrap">
+        <p class="breadcrumb"><a href="../">home</a> / <a href="./">notes</a> / at-least-once-rabbitmq</p>
+
+        <div class="detail-header">
+            <p class="subtitle">Messaging · Reliability</p>
+            <h1>At-least-once delivery on RabbitMQ: idempotent consumers, DLQ and replay</h1>
+        </div>
+
+        <article class="prose">
+            <p>
+                Teams new to message brokers often ask for "exactly-once delivery". On RabbitMQ, as on most
+                brokers, you don't get that across a network boundary. What you can build is
+                <strong>at-least-once delivery plus idempotent processing</strong>, which gives you exactly-once
+                <em>effects</em>. That is what the business actually cares about. Three pieces make it work:
+                manual acknowledgements, idempotent consumers, and a dead-letter path you can replay from.
+            </p>
+
+            <h2>1. Acknowledge after the work, not before</h2>
+            <p>
+                With auto-ack, the broker forgets a message as soon as it is handed to the consumer. If the pod dies
+                halfway through processing, the message is gone. Use manual acknowledgement and ack only after the
+                database transaction commits. If the consumer crashes before the ack, the broker redelivers.
+                That redelivery is the "at least" in at-least-once.
+            </p>
+<pre><code>@RabbitListener(queues = "order.released", ackMode = "MANUAL")
+void onReleased(Message msg, Channel ch) throws IOException {
+    long tag = msg.getMessageProperties().getDeliveryTag();
+    try {
+        handler.process(parse(msg));     // commits its own transaction
+        ch.basicAck(tag, false);
+    } catch (TransientException e) {
+        ch.basicNack(tag, false, true);  // requeue, try again
+    } catch (Exception e) {
+        ch.basicNack(tag, false, false); // reject -> dead-letter exchange
+    }
+}</code></pre>
+            <p>
+                On the producer side, publisher confirms tell you the broker accepted the message. Without them a
+                publish can be lost silently during a broker failover.
+            </p>
+
+            <h2>2. Make the consumer idempotent</h2>
+            <p>
+                Redelivery means the same message can arrive twice: after a crash, after a network blip between
+                commit and ack, or after a replay. The consumer has to make the second delivery a no-op. Two
+                techniques cover almost every case:
+            </p>
+            <ul>
+                <li><strong>Dedupe table.</strong> Every message carries a unique <code>messageId</code>. Insert it into a
+                    <code>processed_messages</code> table <em>in the same transaction</em> as the business change. A
+                    unique-key violation means "already done": ack and move on.</li>
+                <li><strong>State-machine guard.</strong> Apply the change only if the entity is in the expected prior
+                    state, e.g. <code>UPDATE task SET state='PICKED' WHERE id=? AND state='AT_STATION'</code>. Zero rows
+                    updated means the event was already applied, or it is stale.</li>
+            </ul>
+<pre><code>@Transactional
+void process(TaskEvent e) {
+    if (!dedupe.tryInsert(e.messageId())) return;        // seen before
+    int rows = tasks.transition(e.taskId(), AT_STATION, PICKED);
+    if (rows == 0) log.info("stale or duplicate {}", e); // safe no-op
+}</code></pre>
+            <p>
+                The state guard also protects against <strong>out-of-order</strong> delivery. RabbitMQ preserves order
+                per queue, but not once retries, multiple consumers or several producers are involved.
+            </p>
+
+            <h2>3. Dead-letter, don't loop</h2>
+            <p>
+                A poison message (bad payload, a bug, a missing reference) that is requeued forever will spin the
+                consumer at 100% CPU and block everything behind it. Configure the queue with a
+                <strong>dead-letter exchange</strong>:
+            </p>
+<pre><code>x-dead-letter-exchange    = dlx
+x-dead-letter-routing-key = order.released.dlq</code></pre>
+            <p>
+                Transient failures (database briefly unavailable) should retry with a bounded count and some delay.
+                A common approach is a retry queue with a per-message TTL that dead-letters back to the main queue,
+                with the attempt count kept in a header. Permanent failures, or anything over the retry budget,
+                go to the DLQ.
+            </p>
+
+            <h2>4. Replay is a feature</h2>
+            <p>
+                A DLQ that nobody drains is a slow data-loss bug. Treat replay as a first-class tool:
+            </p>
+            <ul>
+                <li>Alert on DLQ depth > 0, and show it on the same dashboard as consumer lag.</li>
+                <li>Keep the original headers and add the failure reason when dead-lettering, so triage doesn't need log archaeology.</li>
+                <li>Provide a replay command that moves selected messages back to the main exchange <em>after</em> the fix ships.
+                    Because consumers are idempotent, replaying something that was half-applied is safe.</li>
+            </ul>
+
+            <h2>What this buys you</h2>
+            <p>
+                With these pieces, a broker restart, a pod eviction or a bad deploy is an operational event, not
+                a data incident. Messages are either processed once in effect, waiting in a queue, or parked in a DLQ
+                with a reason attached. Nothing disappears.
+            </p>
+            <p>
+                Where a business event has to be published reliably <em>together with</em> a database change, add the
+                <strong>transactional outbox</strong>. Write the event to an outbox table in the same transaction, and
+                have a relay publish it. That closes the remaining gap: a crash between commit and publish.
+            </p>
+        </article>
+
+        <div class="page-nav">
+            <a href="./">← all notes</a>
+            <a href="finding-the-real-bottleneck.html">next: finding the real bottleneck →</a>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <p>© <span id="year">2026</span> Rahul Maurya</p>
+    </footer>
+
+    <script src="../js/theme.js" defer></script>
+    <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+</body>
+
+</html>

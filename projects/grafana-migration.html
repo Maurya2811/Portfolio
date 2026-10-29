@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grafana Dashboard Migration Tool · Case Study — Rahul Maurya</title>
+    <meta name="description" content="Case study: a Python tool that migrates 200+ Grafana dashboards across 3 network environments in 20 minutes instead of 8 hours, with dry-run diffs and idempotent imports.">
+    <link rel="canonical" href="https://maurya2811.github.io/Portfolio/projects/grafana-migration.html">
+    <meta property="og:image" content="https://maurya2811.github.io/Portfolio/images/og-card.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta property="og:title" content="Grafana Dashboard Migration Tool — Rahul Maurya">
+    <meta property="og:description" content="8 hrs to 20 min (-95%): config-driven, idempotent dashboard migration across environments.">
+    <meta property="og:type" content="article">
+    <link rel="icon" href="../favicon.ico?v=3">
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+    <script>try{var t=localStorage.getItem('rm-theme');document.documentElement.setAttribute('data-theme',t==='light'?'light':'dark');}catch(e){}</script>
+</head>
+
+<body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="nav">
+        <a href="../" class="brand">RM<span>.</span></a>
+        <nav aria-label="Primary">
+            <a href="../#about">About</a>
+            <a href="../#experience">Experience</a>
+            <a href="./">Case Studies</a>
+            <a href="../notes/">Notes</a>
+            <a href="../#contact">Contact</a>
+        </nav>
+        <a class="nav-cta" href="../resume/">Resume</a>
+    </header>
+
+    <main id="main" class="detail-wrap">
+        <p class="breadcrumb"><a href="../">home</a> / <a href="./">case studies</a> / grafana-migration</p>
+
+        <div class="detail-header">
+            <p class="subtitle">Automation · Python · Addverb Technologies</p>
+            <h1>Grafana Dashboard Migration Tool</h1>
+            <p class="lede">
+                A Python tool that moves monitoring dashboards between environments. A manual, error-prone
+                8-hour job became a 20-minute run with a reviewable diff.
+            </p>
+        </div>
+
+        <p class="disclaimer">
+            Simplified reference architecture written from memory for discussion. Client identity,
+            service names, topology, configuration and code are deliberately omitted or generalised.
+        </p>
+
+        <div class="meta-grid">
+            <div><span>Role</span>Sole author</div>
+            <div><span>Scale</span>200+ dashboards · 3 environments</div>
+            <div><span>Time</span>8 hrs → 20 min (−95%)</div>
+            <div><span>Property</span>Idempotent, dry-run first</div>
+        </div>
+
+        <section class="detail-section">
+            <h2>Problem</h2>
+            <ul>
+                <li>Dashboards were built in one environment and had to be recreated in others that sit on separate
+                    networks, each with its own datasource names and folder layout.</li>
+                <li>Doing it by hand meant export, edit JSON, import, and fix broken panels. It took about 8 hours per
+                    migration, and mismatched datasource references often went unnoticed until someone needed the panel.</li>
+            </ul>
+        </section>
+
+        <section class="detail-section">
+            <h2>Design</h2>
+            <ul>
+                <li><strong>Export</strong> dashboards and folders from the source through the Grafana HTTP API.</li>
+                <li><strong>Transform</strong> each dashboard JSON using a per-environment config file: datasource
+                    name/UID mapping, folder mapping, and stripping of instance-specific fields (<code>id</code>, <code>version</code>).</li>
+                <li><strong>Dry-run</strong> by default: print a diff report of what would be created, changed or left alone,
+                    plus any datasource reference with no mapping.</li>
+                <li><strong>Import with overwrite</strong> keyed on dashboard UID, so re-running is safe and the target converges to the source.</li>
+                <li>Credentials come from environment variables, never from the config file or the repo.</li>
+            </ul>
+        </section>
+
+        <section class="detail-section">
+            <h2>Reference architecture</h2>
+            <div class="diagram">
+                <pre class="mermaid">
+flowchart LR
+  SRC["Source Grafana"] -->|HTTP API export| EXP["Exporter"]
+  CFG["env config: datasource + folder maps"] --> TR["Transformer"]
+  EXP --> TR
+  TR --> VAL{"All references mapped?"}
+  VAL -- no --> REP["Diff report + unmapped list"]
+  VAL -- yes --> DRY{"--apply?"}
+  DRY -- no --> REP
+  DRY -- yes --> IMP["Importer: overwrite by UID"]
+  IMP --> TGT["Target Grafana (env 1..3)"]
+  IMP --> REP
+                </pre>
+            </div>
+        </section>
+
+        <section class="detail-section">
+            <h2>Trade-offs</h2>
+            <div class="table-wrap">
+                <table class="tradeoffs">
+                    <thead><tr><th>Decision</th><th>Chose</th><th>Over</th><th>Why</th></tr></thead>
+                    <tbody>
+                        <tr><td>Identity of a dashboard</td><td>UID-keyed overwrite</td><td>Create-new on each run</td><td>Idempotent re-runs, no duplicates</td></tr>
+                        <tr><td>Environment differences</td><td>Declarative config file</td><td>Hard-coded rewrites</td><td>A new environment is a config entry, not a code change</td></tr>
+                        <tr><td>Default mode</td><td>Dry-run</td><td>Apply</td><td>Reviewers see the diff before anything changes</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="detail-section">
+            <h2>Failure modes I designed for</h2>
+            <ul>
+                <li><strong>Unmapped datasource:</strong> the run fails before import and lists every offending panel.</li>
+                <li><strong>Partial failure mid-import:</strong> it is safe to re-run because imports are idempotent.</li>
+                <li><strong>Missing folder in the target:</strong> the folder is created from the mapping before any dashboards are imported.</li>
+            </ul>
+        </section>
+
+        <section class="detail-section">
+            <h2>Impact</h2>
+            <ul>
+                <li>Migration time <strong>8 hrs → 20 min (−95%)</strong>.</li>
+                <li><strong>200+ dashboards</strong> moved across <strong>3 network environments</strong>.</li>
+                <li>Broken-panel surprises after migration disappeared, because unmapped references fail early.</li>
+            </ul>
+        </section>
+
+        <section class="detail-section">
+            <h2>What I would do differently</h2>
+            <ul>
+                <li>Keep dashboards as code in Git and provision them, so migration is just a deploy.</li>
+                <li>Add a CI job that validates every dashboard JSON against each environment's mapping.</li>
+            </ul>
+        </section>
+
+        <section class="detail-section">
+            <div class="talking-points">
+                <h3>// interview talking points</h3>
+                <ol>
+                    <li>Idempotency as a design goal for ops tooling.</li>
+                    <li>Fail-early validation instead of discovering errors in production.</li>
+                    <li>How I'd evolve it into dashboards-as-code.</li>
+                </ol>
+            </div>
+        </section>
+
+        <section class="detail-section">
+            <h2>Tech</h2>
+            <ul class="stack-row">
+                <li>Python</li><li>Grafana HTTP API</li><li>JSON</li>
+            </ul>
+        </section>
+
+        <div class="page-nav">
+            <a href="deep-lane-asrs.html">← prev: deep-lane ASRS</a>
+            <a href="retail-dc-platform.html">next: retail DC platform →</a>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <p>© <span id="year">2026</span> Rahul Maurya · Case studies are simplified and anonymised and contain no proprietary code or client data.</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js" integrity="sha384-WmdflGW9aGfoBdHc4rRyWzYuAjEmDwMdGdiPNacbwfGKxBW/SO6guzuQ76qjnSlr" crossorigin="anonymous" defer></script>
+    <script src="../js/theme.js" defer></script>
+    <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+</body>
+
+</html>

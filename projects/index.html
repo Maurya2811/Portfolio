@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Case Studies — Rahul Maurya</title>
+    <meta name="description" content="Engineering case studies by Rahul Maurya: event-driven microservices, observability, routing algorithms, hardware integration and LLM tooling for warehouse automation.">
+    <link rel="canonical" href="https://maurya2811.github.io/Portfolio/projects/">
+    <meta property="og:image" content="https://maurya2811.github.io/Portfolio/images/og-card.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="icon" href="../favicon.ico?v=3">
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+    <script>try{var t=localStorage.getItem('rm-theme');document.documentElement.setAttribute('data-theme',t==='light'?'light':'dark');}catch(e){}</script>
+</head>
+
+<body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="nav">
+        <a href="../" class="brand">RM<span>.</span></a>
+        <nav aria-label="Primary">
+            <a href="../#about">About</a>
+            <a href="../#experience">Experience</a>
+            <a href="./">Case Studies</a>
+            <a href="../notes/">Notes</a>
+            <a href="../#contact">Contact</a>
+        </nav>
+        <a class="nav-cta" href="../resume/">Resume</a>
+    </header>
+
+    <main id="main" class="detail-wrap">
+        <p class="breadcrumb"><a href="../">home</a> / case studies</p>
+        <div class="detail-header">
+            <p class="subtitle">Engineering deep-dives</p>
+            <h1>Case Studies</h1>
+            <p class="lede">
+                Each case study covers the problem, what I personally did, a reference architecture, the
+                trade-offs I made, the failure modes I designed for, and the measured result.
+            </p>
+        </div>
+        <p class="disclaimer">
+            All case studies are simplified and anonymised. They describe engineering patterns and my own
+            contributions, and contain no proprietary code, configuration, topology or client data.
+        </p>
+
+        <h2 class="section-title" style="margin-top:36px"><span>//</span> Production systems</h2>
+        <div class="projects-index">
+            <a class="project project-link" href="retail-dc-platform.html">
+                <header><h4>Retail DC Execution Platform</h4><span class="tag">2026 · Distributed Systems · Forward-deployed</span></header>
+                <p>20+ microservice warehouse execution platform at a live distribution centre. Picking throughput 800 → 1,200 totes/hr (+50%); contracted SLA met.</p>
+                <span class="project-cta">Read case study →</span>
+            </a>
+            <a class="project project-link" href="event-observability.html">
+                <header><h4>Cross-Service Event Observability</h4><span class="tag">2026 · Observability · Event-Driven</span></header>
+                <p>Irregular-event store on RabbitMQ + MongoDB that turned multi-pod log grepping into one correlated query and gave the evidence for the throughput fix.</p>
+                <span class="project-cta">Read case study →</span>
+            </a>
+            <a class="project project-link" href="llm-inventory-agent.html">
+                <header><h4>LLM Inventory Assistant</h4><span class="tag">2025 · AI · RAG + Tool Calling</span></header>
+                <p>Conversational assistant answering operator inventory questions through read-only tools. 75%+ of queries auto-resolved, −40% support tickets.</p>
+                <span class="project-cta">Read case study →</span>
+            </a>
+            <a class="project project-link" href="shuttle-telemetry.html">
+                <header><h4>Robotic Shuttle Integration &amp; Telemetry</h4><span class="tag">2025 · Integration · Real-Time Telemetry</span></header>
+                <p>Third-party shuttles and lifts integrated into an ASRS through adapters; 99.6% telemetry capture across 50+ devices, −70% downtime diagnosis.</p>
+                <span class="project-cta">Read case study →</span>
+            </a>
+            <a class="project project-link" href="tote-routing.html">
+                <header><h4>Tote Routing Optimisation</h4><span class="tag">2025 · Algorithms · Performance</span></header>
+                <p>Congestion-aware Dijkstra with precomputed K-shortest alternates: −200 ms per routing decision, −15% path resolution, +12% pilot throughput.</p>
+                <span class="project-cta">Read case study →</span>
+            </a>
+            <a class="project project-link" href="deep-lane-asrs.html">
+                <header><h4>Deep-Lane ASRS Control</h4><span class="tag">2024–25 · Hardware Integration · WCS</span></header>
+                <p>5-deep, 9-level storage orchestrating cranes, shuttles and duplex lifts; 500+ daily transactions; interface testing 3 months → 3 weeks.</p>
+                <span class="project-cta">Read case study →</span>
+            </a>
+            <a class="project project-link" href="grafana-migration.html">
+                <header><h4>Grafana Dashboard Migration Tool</h4><span class="tag">2025 · Python · Developer Tooling</span></header>
+                <p>Idempotent export / rewrite / import across 3 network environments; each migration went from 8 hours to 20 minutes for 200+ dashboards.</p>
+                <span class="project-cta">Read case study →</span>
+            </a>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <p>© <span id="year">2026</span> Rahul Maurya · Case studies are simplified and anonymised and contain no proprietary code or client data.</p>
+    </footer>
+    <script src="../js/theme.js" defer></script>
+    <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+</body>
+
+</html>

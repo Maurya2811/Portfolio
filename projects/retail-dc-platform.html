@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retail DC Execution Platform · Case Study — Rahul Maurya</title>
+    <meta name="description" content="Case study: diagnosing throughput bottlenecks and adding cross-service observability to a 20+ microservice warehouse execution platform (Java, Spring Boot, RabbitMQ, MongoDB, Kubernetes).">
+    <link rel="canonical" href="https://maurya2811.github.io/Portfolio/projects/retail-dc-platform.html">
+    <meta property="og:image" content="https://maurya2811.github.io/Portfolio/images/og-card.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta property="og:title" content="Retail DC Execution Platform — Rahul Maurya">
+    <meta property="og:description" content="+50% goods-to-person picking throughput and cross-service observability on a 20+ microservice platform.">
+    <meta property="og:type" content="article">
+    <link rel="icon" href="../favicon.ico?v=3">
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+    <script>try{var t=localStorage.getItem('rm-theme');document.documentElement.setAttribute('data-theme',t==='light'?'light':'dark');}catch(e){}</script>
+</head>
+
+<body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="nav">
+        <a href="../" class="brand">RM<span>.</span></a>
+        <nav aria-label="Primary">
+            <a href="../#about">About</a>
+            <a href="../#experience">Experience</a>
+            <a href="./">Case Studies</a>
+            <a href="../notes/">Notes</a>
+            <a href="../#contact">Contact</a>
+        </nav>
+        <a class="nav-cta" href="../resume/">Resume</a>
+    </header>
+
+    <main id="main" class="detail-wrap">
+        <p class="breadcrumb"><a href="../">home</a> / <a href="./">case studies</a> / retail-dc-platform</p>
+
+        <div class="detail-header">
+            <p class="subtitle">Distributed Systems · Jan 2026 – Present · Addverb Australia · Forward-deployed</p>
+            <h1>Retail DC Execution Platform</h1>
+            <p class="lede">
+                Forward-deployed on a live, 3PL-operated distribution centre for a tier-1 global retail
+                brand. I own feature delivery and production health across a 20+ microservice Warehouse
+                Execution System, and I led the throughput work that took goods-to-person picking from
+                800 to 1,200 totes/hr.
+            </p>
+        </div>
+
+        <p class="disclaimer">
+            Simplified reference architecture written from memory for discussion. Client identity,
+            service names, topology, configuration and code are deliberately omitted or generalised.
+        </p>
+
+        <div class="meta-grid">
+            <div><span>Role</span>Software Engineer (on-site)</div>
+            <div><span>Scope</span>20+ Spring Boot services</div>
+            <div><span>Throughput</span>800 → 1,200 totes/hr (+50%)</div>
+            <div><span>Business</span>Contracted SLA milestone met</div>
+        </div>
+
+        <section class="detail-section">
+            <h2>Context</h2>
+            <p>
+                A Warehouse Execution System (WES) sits between the client's host WMS/ERP and the
+                automation hardware: robotic storage, goods-to-person (GTP) pick stations, robot cells,
+                conveyors and pack stations. Each capability is its own Spring Boot service, and they
+                talk through a message broker. The site had a contracted throughput SLA, and a
+                commercial milestone depended on meeting it.
+            </p>
+        </section>
+
+        <section class="detail-section">
+            <h2>Problem</h2>
+            <ul>
+                <li>Pick stations averaged about <strong>800 totes/hr</strong>, well short of the contracted rate.</li>
+                <li>Every team blamed a different layer: hardware, the network, the WMS or "the software".
+                    Nobody had a cross-service view of where a tote actually spent its time.</li>
+                <li>Irregular events (stuck totes, failed hand-offs, hardware timeouts) showed up only in
+                    per-service logs, so root-cause analysis meant grepping several pods by hand.</li>
+            </ul>
+        </section>
+
+        <section class="detail-section">
+            <h2>What I did</h2>
+            <ul>
+                <li><strong>Built an irregular-event store.</strong> Services publish a small, uniform
+                    <code>IrregularEvent</code> (correlation id, tote/order id, stage, reason, timestamps) to the
+                    broker, and a consumer persists them to a MongoDB collection indexed by correlation id and
+                    time. One query now shows a tote's whole lifecycle across services.
+                    (<a href="event-observability.html">Design deep-dive</a>.)</li>
+                <li><strong>Measured before changing anything.</strong> From the event data I built stage-by-stage
+                    dwell-time breakdowns. These showed the bottleneck was in software: work was released to stations
+                    in an order that starved some stations and queued others, and mixed business flows contended
+                    for the same automation.</li>
+                <li><strong>Fixed the release and allocation logic.</strong> Changed how work is allocated and released
+                    to stations, and <strong>segregated business flows</strong> (e.g. replenishment vs. customer orders)
+                    so they stopped competing for the same resources. This gave +30% operational efficiency for the client.</li>
+                <li><strong>Delivered change requests end-to-end</strong> across the stack: design, implementation,
+                    Helm-based rollout, on-site validation with operations, and hypercare.</li>
+            </ul>
+        </section>
+
+        <section class="detail-section">
+            <h2>Reference architecture</h2>
+            <div class="diagram">
+                <pre class="mermaid">
+flowchart LR
+  HOST["Host WMS / ERP"] -->|orders, ASNs| INT["Host Integration"]
+  INT --> ORCH["Order Orchestrator"]
+  ORCH --> ALLOC["Allocation Service"]
+  ORCH --> SLOT["Slotting / Location Service"]
+  subgraph EXEC["Execution services"]
+    DEC["Inbound Decant"]
+    GTP["GTP Station Service"]
+    CELL["Robot Cell Adapter"]
+    PACK["Pack Station"]
+    RET["Returns"]
+  end
+  ALLOC --> GTP
+  SLOT --> DEC
+  subgraph BUS["Message broker"]
+    MQ[("Topic exchange")]
+  end
+  EXEC <--> MQ
+  ORCH <--> MQ
+  FLEET["Hardware Fleet Adapters"] <--> MQ
+  MQ --> IRR["Irregular-Event Consumer"]
+  IRR --> STORE[("Event store - MongoDB")]
+  STORE --> DASH["Grafana: dwell time, stuck totes"]
+  ORCH --> SQL[("Transactional DB - SQL")]
+                </pre>
+            </div>
+            <p class="callout">
+                <strong>Design principle:</strong> each service owns its own data and contract, and side-effects
+                cross service boundaries only as events. The irregular-event store is a <em>read-side</em> copy
+                built for diagnosis, so it never sits on the transactional hot path.
+            </p>
+        </section>
+
+        <section class="detail-section">
+            <h2>Low-level flow — order to pack, with diagnostics</h2>
+            <div class="diagram">
+                <pre class="mermaid">
+sequenceDiagram
+  autonumber
+  participant H as Host Integration
+  participant O as Order Orchestrator
+  participant A as Allocation
+  participant G as GTP Station
+  participant P as Pack Station
+  participant B as Broker
+  participant E as Event Store
+  H->>O: order received
+  O->>A: allocate(order lines)
+  A-->>O: allocation plan
+  O->>B: publish order.released
+  B->>G: tote presented to station
+  G-->>B: pick.completed / pick.exception
+  B->>P: tote to pack
+  P-->>B: pack.completed
+  B->>E: lifecycle + irregular events (async)
+  Note over B,E: Diagnostics are best-effort and never block the order path
+                </pre>
+            </div>
+        </section>
+
+        <section class="detail-section">
+            <h2>Trade-offs</h2>
+            <div class="table-wrap">
+                <table class="tradeoffs">
+                    <thead><tr><th>Decision</th><th>Chose</th><th>Over</th><th>Why</th></tr></thead>
+                    <tbody>
+                        <tr><td>Where diagnostics live</td><td>Separate MongoDB event store</td><td>Querying transactional SQL tables</td><td>Keeps load off the hot path; the schema-flexible documents suit heterogeneous event payloads</td></tr>
+                        <tr><td>How events are emitted</td><td>Async publish, fire-and-forget</td><td>Synchronous write inside the business transaction</td><td>A diagnostics outage must never stop the floor; losing a diagnostic event is acceptable, losing an order is not</td></tr>
+                        <tr><td>How to raise throughput</td><td>Fix release / allocation policy first</td><td>Scaling pods or adding hardware</td><td>The data showed starvation and contention, not lack of compute; scaling would have hidden the problem</td></tr>
+                        <tr><td>How to roll out</td><td>Feature-flagged, shift-by-shift</td><td>Big-bang release</td><td>The site is live 24/7, and operations needed a fast rollback path</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="detail-section">
+            <h2>Failure modes I designed for</h2>
+            <ul>
+                <li><strong>Broker redelivery:</strong> consumers are idempotent (dedupe on message id plus state check), so redelivered events don't double-apply.</li>
+                <li><strong>Poison messages:</strong> bounded retries, then a dead-letter queue with replay tooling.</li>
+                <li><strong>Hardware timeouts:</strong> they raise an irregular event with a reason code instead of failing silently, so they show up in the stuck-tote dashboard.</li>
+            </ul>
+        </section>
+
+        <section class="detail-section">
+            <h2>Impact</h2>
+            <ul>
+                <li>GTP picking throughput <strong>800 → 1,200 totes/hr (+50%)</strong>.</li>
+                <li>Closed the gap to the <strong>contracted throughput SLA</strong>, which unblocked a seven-figure (AUD) contractual milestone.</li>
+                <li><strong>+30%</strong> client operational efficiency from segregating business flows.</li>
+                <li>Root-cause analysis went from grepping pods to a single correlated query.</li>
+            </ul>
+        </section>
+
+        <section class="detail-section">
+            <h2>What I would do differently</h2>
+            <ul>
+                <li>Adopt OpenTelemetry trace context in every event from day one, so dwell-time analysis and tracing share one correlation id.</li>
+                <li>Use the transactional outbox pattern for business-critical events, so publish and DB commit are atomic.</li>
+            </ul>
+        </section>
+
+        <section class="detail-section">
+            <div class="talking-points">
+                <h3>// interview talking points</h3>
+                <ol>
+                    <li>How I proved the bottleneck was in software, not hardware: dwell-time per stage from correlated events.</li>
+                    <li>Why diagnostics are async and lossy-tolerant while business events are not.</li>
+                    <li>How to change allocation logic safely on a live 24/7 site: flags, shadow comparison, shift-based rollout.</li>
+                    <li>Idempotency and DLQ design for at-least-once delivery.</li>
+                </ol>
+            </div>
+        </section>
+
+        <section class="detail-section">
+            <h2>Tech</h2>
+            <ul class="stack-row">
+                <li>Java 17</li><li>Spring Boot</li><li>Spring Data JPA</li><li>RabbitMQ</li>
+                <li>MongoDB</li><li>SQL Server</li><li>Docker</li><li>Kubernetes</li><li>Helm</li>
+                <li>Jenkins</li><li>Grafana</li><li>Jaeger</li>
+            </ul>
+        </section>
+
+        <div class="page-nav">
+            <a href="./">← all case studies</a>
+            <a href="event-observability.html">next: event observability →</a>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <p>© <span id="year">2026</span> Rahul Maurya · Case studies are simplified and anonymised and contain no proprietary code or client data.</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js" integrity="sha384-WmdflGW9aGfoBdHc4rRyWzYuAjEmDwMdGdiPNacbwfGKxBW/SO6guzuQ76qjnSlr" crossorigin="anonymous" defer></script>
+    <script src="../js/theme.js" defer></script>
+    <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+</body>
+
+</html>

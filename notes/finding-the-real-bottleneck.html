@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finding the real bottleneck in a goods-to-person system — Rahul Maurya</title>
+    <meta name="description" content="Dwell time per stage, Little's law, starvation versus queueing, and why scaling pods does not fix an allocation policy.">
+    <link rel="canonical" href="https://maurya2811.github.io/Portfolio/notes/finding-the-real-bottleneck.html">
+    <meta property="og:image" content="https://maurya2811.github.io/Portfolio/images/og-card.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta property="og:title" content="Finding the real bottleneck in a goods-to-person system — Rahul Maurya">
+    <meta property="og:description" content="Dwell time per stage, Little's law, and starvation versus queueing.">
+    <meta property="og:type" content="article">
+    <link rel="icon" href="../favicon.ico?v=3">
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+    <script>try{var t=localStorage.getItem('rm-theme');document.documentElement.setAttribute('data-theme',t==='light'?'light':'dark');}catch(e){}</script>
+</head>
+
+<body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="nav">
+        <a href="../" class="brand">RM<span>.</span></a>
+        <nav aria-label="Primary">
+            <a href="../#about">About</a>
+            <a href="../#experience">Experience</a>
+            <a href="../projects/">Case Studies</a>
+            <a href="./">Notes</a>
+            <a href="../#contact">Contact</a>
+        </nav>
+        <a class="nav-cta" href="../resume/">Resume</a>
+    </header>
+
+    <main id="main" class="detail-wrap">
+        <p class="breadcrumb"><a href="../">home</a> / <a href="./">notes</a> / finding-the-real-bottleneck</p>
+
+        <div class="detail-header">
+            <p class="subtitle">Performance · Throughput</p>
+            <h1>Finding the real bottleneck in a goods-to-person system</h1>
+        </div>
+
+        <article class="prose">
+            <p>
+                In a goods-to-person (GTP) warehouse, robots bring storage totes to a pick station, an operator
+                picks items into order totes, and the storage tote goes back. When throughput falls short, everyone
+                has a theory: the robots are slow, the network is flaky, the operators need training, the software
+                needs more pods. On a recent project, picking went from about 800 to 1,200 totes/hr. None of those
+                theories was right, and no hardware was added. This note covers the method, which carries over to
+                any multi-stage pipeline.
+            </p>
+
+            <h2>Measure dwell time per stage, not averages per service</h2>
+            <p>
+                A tote's life is a sequence of stages: requested, retrieved, in transit, queued at station,
+                at station, picked, returned. Each service sees only its own slice, and service-level latency
+                metrics look fine because each service <em>is</em> fast at what it does. The waiting happens
+                <strong>between</strong> services.
+            </p>
+            <p>
+                So the first step is to record a timestamped event at every stage boundary, keyed by a correlation id.
+                With that you can compute <strong>dwell time per stage</strong>: how long totes actually spend in
+                each state, as a distribution (p50 / p95), not just an average. The stage with the largest share of
+                total time is where to look. It is usually not where people expect.
+            </p>
+
+            <h2>Little's law keeps you honest</h2>
+            <p>
+                For any stable system, <code>L = λ × W</code>: average work in progress equals throughput times
+                average time in the system. Rearranged, <code>λ = L / W</code>. If you want more totes per hour at
+                the same work in progress, you have to cut time in the system. If you just push more work in, you
+                raise <code>L</code> and <code>W</code> grows with it. Queues get longer and throughput stays flat.
+            </p>
+            <p>
+                That is a useful check against "release more orders": if the bottleneck stage is already saturated,
+                releasing more work only makes the queue in front of it longer.
+            </p>
+
+            <h2>Starvation and queueing look the same from far away</h2>
+            <p>
+                The key distinction in the data:
+            </p>
+            <ul>
+                <li><strong>Queueing:</strong> totes wait in front of a station that is busy. The station is the
+                    bottleneck. Fix it by making the station faster or adding capacity.</li>
+                <li><strong>Starvation:</strong> a station sits idle with nothing to pick, while other stations
+                    have long queues. The station isn't the bottleneck. The problem is the <em>policy that decides
+                    which work goes where and when</em>.</li>
+            </ul>
+            <p>
+                Both lower throughput, and a top-line "totes per hour" chart can't tell them apart. Plot
+                per-station idle time against per-station queue length over the same window. If you see stations
+                idle while their neighbours queue, you have an allocation and release problem.
+            </p>
+
+            <h2>Why more pods would not have helped</h2>
+            <p>
+                The services themselves weren't CPU-bound. Request latency was fine and consumers kept up with
+                their queues. Scaling them horizontally would have made fast things faster while the totes kept
+                waiting on a <em>decision</em>: work was released in an order that sent too much to some stations
+                and too little to others, and different business flows competed for the same storage robots.
+            </p>
+            <p>
+                Allocation policy is logic, not capacity. The fixes were policy changes:
+            </p>
+            <ul>
+                <li>Balance release across stations using their live queue depth instead of a static order.</li>
+                <li>Segregate business flows so low-priority work (e.g. replenishment) can't crowd out customer orders on shared automation.</li>
+                <li>Release just enough work ahead of each station to keep it busy (a work-in-progress cap) instead of flooding the floor.</li>
+            </ul>
+
+            <h2>Change safely on a live floor</h2>
+            <p>
+                Warehouses run around the clock, so policy changes went in behind flags, one shift at a time,
+                with the dwell-time dashboard as the before/after evidence and a one-switch rollback. Each change
+                came with a measurable claim ("p95 queued-at-station drops, idle time drops") that the next shift's
+                data either confirmed or rejected.
+            </p>
+
+            <h2>Takeaways</h2>
+            <ul>
+                <li>Instrument stage boundaries with a correlation id before forming opinions.</li>
+                <li>Read distributions per stage, not averages per service.</li>
+                <li>Separate starvation from queueing; they need opposite fixes.</li>
+                <li>If services aren't saturated, scaling them is noise. Look at the policy.</li>
+            </ul>
+        </article>
+
+        <div class="page-nav">
+            <a href="at-least-once-rabbitmq.html">← prev: at-least-once on RabbitMQ</a>
+            <a href="./">all notes →</a>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <p>© <span id="year">2026</span> Rahul Maurya</p>
+    </footer>
+
+    <script src="../js/theme.js" defer></script>
+    <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+</body>
+
+</html>

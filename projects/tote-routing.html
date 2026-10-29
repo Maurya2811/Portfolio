@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tote Routing Optimisation · Case Study — Rahul Maurya</title>
+    <meta name="description" content="Case study: graph-based tote routing with Dijkstra and Yen's K-shortest paths over congestion-weighted edges, giving -15% travel time, -200 ms per routing decision and +12% pilot throughput (Java, Spring Boot).">
+    <link rel="canonical" href="https://maurya2811.github.io/Portfolio/projects/tote-routing.html">
+    <meta property="og:image" content="https://maurya2811.github.io/Portfolio/images/og-card.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta property="og:title" content="Tote Routing Optimisation — Rahul Maurya">
+    <meta property="og:description" content="Dijkstra + K-shortest routing on a congestion-weighted graph: -15% travel time, +12% pilot throughput.">
+    <meta property="og:type" content="article">
+    <link rel="icon" href="../favicon.ico?v=3">
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+    <script>try{var t=localStorage.getItem('rm-theme');document.documentElement.setAttribute('data-theme',t==='light'?'light':'dark');}catch(e){}</script>
+</head>
+
+<body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="nav">
+        <a href="../" class="brand">RM<span>.</span></a>
+        <nav aria-label="Primary">
+            <a href="../#about">About</a>
+            <a href="../#experience">Experience</a>
+            <a href="./">Case Studies</a>
+            <a href="../notes/">Notes</a>
+            <a href="../#contact">Contact</a>
+        </nav>
+        <a class="nav-cta" href="../resume/">Resume</a>
+    </header>
+
+    <main id="main" class="detail-wrap">
+        <p class="breadcrumb"><a href="../">home</a> / <a href="./">case studies</a> / tote-routing</p>
+
+        <div class="detail-header">
+            <p class="subtitle">Algorithms · Jun 2025 – Aug 2025 · Addverb Technologies</p>
+            <h1>Tote Routing Optimisation</h1>
+            <p class="lede">
+                Redesigned how totes are routed from storage to goods-to-person pick stations in a
+                D2C retailer's fulfilment centre in India. I modelled the transport network as a graph
+                with live congestion weights, which cut travel time by 15% and lifted pilot throughput by 12%.
+            </p>
+        </div>
+
+        <p class="disclaimer">
+            Simplified reference architecture written from memory for discussion. Client identity,
+            site layout, service names, parameters, configuration and code are deliberately omitted
+            or generalised.
+        </p>
+
+        <div class="meta-grid">
+            <div><span>Role</span>Software Development Engineer</div>
+            <div><span>Travel time</span>-15%</div>
+            <div><span>Latency</span>-200 ms per routing decision</div>
+            <div><span>Throughput</span>+12% in pilot</div>
+        </div>
+
+        <section class="detail-section">
+            <h2>Context</h2>
+            <p>
+                Totes leave automated storage and travel over a network of conveyors, junctions and
+                diverts to goods-to-person stations, where operators pick items. If totes arrive late or
+                bunch up, pickers wait and the whole site slows down.
+            </p>
+        </section>
+
+        <section class="detail-section">
+            <h2>Problem</h2>
+            <ul>
+                <li>The existing router used fixed rules: the same path for a given source and destination,
+                    whatever the load.</li>
+                <li>At peak, some segments congested while alternatives sat idle. Totes queued, stations
+                    starved and end-to-end latency grew.</li>
+                <li>Route resolution was slow enough to add noticeable delay to each routing decision.</li>
+            </ul>
+        </section>
+
+        <section class="detail-section">
+            <h2>What I did</h2>
+            <ul>
+                <li><strong>Modelled the network as a weighted directed graph.</strong> Nodes are junctions and
+                    diverts; edges are conveyor segments. Each edge's weight is its base travel time plus a
+                    congestion penalty.</li>
+                <li><strong>Fed live congestion into the weights.</strong> Conveyor telemetry updates the
+                    congestion penalty on each edge, so routes reflect current load rather than a static map.</li>
+                <li><strong>Implemented Dijkstra for the primary route</strong> and <strong>Yen's K-shortest
+                    paths (k=2)</strong> to precompute an alternate. When the primary path crosses a congestion
+                    threshold, the router switches to the alternate without re-planning on the hot path.</li>
+                <li><strong>Optimised the data structures</strong> (adjacency lists, a binary-heap priority queue,
+                    cached graph snapshots) to cut path resolution time.</li>
+                <li><strong>Benchmarked on replayed traces</strong> from production before the pilot, comparing the
+                    new router against the old one on the same tote sequences.</li>
+            </ul>
+        </section>
+
+        <section class="detail-section">
+            <h2>Reference architecture</h2>
+            <div class="diagram">
+                <pre class="mermaid">
+flowchart LR
+  STORE["Storage exit"] -->|tote ready| ROUT["Tote Router Service"]
+  TELE["Conveyor telemetry"] -->|segment load| WGT["Edge-weight updater"]
+  WGT --> SNAP[("Graph snapshot: edges + live weights")]
+  SNAP --> ROUT
+  ROUT -->|route assigned| MQ[("RabbitMQ")]
+  MQ --> CTRL["Conveyor Controller"]
+  CTRL --> NET["Conveyor network"]
+  NET --> GTP["GTP pick stations"]
+  ROUT --> MET["Grafana: travel time, reroutes"]
+                </pre>
+            </div>
+            <p class="callout">
+                <strong>Complexity:</strong> Dijkstra with a binary heap runs in O((V + E) log V) per query,
+                which is small for a conveyor network. Yen's K-shortest with k=2 costs roughly k·V extra
+                Dijkstra runs, so it's computed ahead of time and refreshed when weights change. Switching to
+                the alternate at decision time is then O(1).
+            </p>
+        </section>
+
+        <section class="detail-section">
+            <h2>Low-level flow — route planning</h2>
+            <div class="diagram">
+                <pre class="mermaid">
+flowchart TB
+  A["Tote ready: source, destination"] --> B["Read latest graph snapshot"]
+  B --> C["Primary path via Dijkstra"]
+  C --> D{"Primary over congestion threshold?"}
+  D -- no --> F["Commit primary path"]
+  D -- yes --> E["Use precomputed alternate (Yen, k=2)"]
+  E --> F
+  F --> G["Publish route.assigned"]
+  G --> H["Record travel time for metrics"]
+                </pre>
+            </div>
+        </section>
+
+        <section class="detail-section">
+            <h2>Trade-offs</h2>
+            <div class="table-wrap">
+                <table class="tradeoffs">
+                    <thead><tr><th>Decision</th><th>Chose</th><th>Over</th><th>Why</th></tr></thead>
+                    <tbody>
+                        <tr><td>Algorithm</td><td>Dijkstra + precomputed K-shortest alternates</td><td>A* or re-planning on every congestion change</td><td>Non-negative weights and a small graph make Dijkstra exact and fast; precomputed alternates keep the hot path cheap</td></tr>
+                        <tr><td>Number of alternates</td><td>k = 2</td><td>Larger k</td><td>Most of the gain came from one alternate; more paths cost more compute and rarely got chosen</td></tr>
+                        <tr><td>Weight updates</td><td>Periodic snapshot of live weights</td><td>Updating the graph on every telemetry event</td><td>Snapshots give consistent reads and avoid routing on half-updated weights</td></tr>
+                        <tr><td>Validation</td><td>Replayed production traces, then pilot</td><td>Synthetic load only</td><td>Real tote sequences expose the congestion patterns that matter</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="detail-section">
+            <h2>Failure modes I designed for</h2>
+            <ul>
+                <li><strong>Telemetry stops:</strong> weights fall back to base travel times, so routing degrades to the static behaviour instead of failing.</li>
+                <li><strong>Both paths congested:</strong> the router commits the cheaper of the two rather than waiting, so totes keep moving.</li>
+                <li><strong>Oscillation:</strong> a threshold with hysteresis stops totes flipping between paths when congestion hovers near the limit.</li>
+            </ul>
+        </section>
+
+        <section class="detail-section">
+            <h2>Impact</h2>
+            <ul>
+                <li>Tote travel and path resolution time <strong>-15%</strong>.</li>
+                <li><strong>-200 ms</strong> latency per routing decision.</li>
+                <li>Warehouse throughput <strong>+12%</strong> during the pilot.</li>
+            </ul>
+        </section>
+
+        <section class="detail-section">
+            <h2>What I would do differently</h2>
+            <ul>
+                <li>Build a small simulator early so routing policies can be compared without waiting for trace replays.</li>
+                <li>Expose congestion weights and route choices as first-class metrics from day one, not after the pilot.</li>
+            </ul>
+        </section>
+
+        <section class="detail-section">
+            <div class="talking-points">
+                <h3>// interview talking points</h3>
+                <ol>
+                    <li>Why Dijkstra fits (non-negative weights, small graph) and when A* would be better.</li>
+                    <li>How Yen's algorithm works and why precomputing alternates keeps decisions O(1).</li>
+                    <li>Hysteresis to avoid route flapping under fluctuating load.</li>
+                    <li>How replayed traces made the before/after comparison fair.</li>
+                </ol>
+            </div>
+        </section>
+
+        <section class="detail-section">
+            <h2>Tech</h2>
+            <ul class="stack-row">
+                <li>Java 17</li><li>Spring Boot</li><li>Graph algorithms</li><li>RabbitMQ</li>
+                <li>MySQL</li><li>Grafana</li>
+            </ul>
+        </section>
+
+        <div class="page-nav">
+            <a href="shuttle-telemetry.html">← prev: shuttle telemetry</a>
+            <a href="deep-lane-asrs.html">next: deep-lane ASRS →</a>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <p>© <span id="year">2026</span> Rahul Maurya · Case studies are simplified and anonymised and contain no proprietary code or client data.</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js" integrity="sha384-WmdflGW9aGfoBdHc4rRyWzYuAjEmDwMdGdiPNacbwfGKxBW/SO6guzuQ76qjnSlr" crossorigin="anonymous" defer></script>
+    <script src="../js/theme.js" defer></script>
+    <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+</body>
+
+</html>

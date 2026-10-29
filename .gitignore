@@ -1,0 +1,16 @@
+# Personal documents never belong in this public repo. They live in ../personal-vault.
+*Aadhar*
+*aadhar*
+*Passport*
+*passport*
+private/
+*.local.*
+# Only the generated resume PDFs are published.
+*.pdf
+!resume/Rahul_Maurya.pdf
+!resume/Rahul_Maurya_India.pdf
+# Tooling
+__pycache__/
+.DS_Store
+.idea/
+.vscode/

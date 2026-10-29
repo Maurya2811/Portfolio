@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM Inventory Assistant · Case Study — Rahul Maurya</title>
+    <meta name="description" content="Case study: an LLM assistant answering warehouse operators' inventory questions with retrieval over SOPs and allowlisted, read-only tool calls. 75%+ of queries auto-resolved, 40% fewer support tickets.">
+    <link rel="canonical" href="https://maurya2811.github.io/Portfolio/projects/llm-inventory-agent.html">
+    <meta property="og:image" content="https://maurya2811.github.io/Portfolio/images/og-card.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta property="og:title" content="LLM Inventory Assistant — Rahul Maurya">
+    <meta property="og:description" content="Retrieval plus allowlisted read-only tools: 75%+ of operator queries auto-resolved, -40% support tickets.">
+    <meta property="og:type" content="article">
+    <link rel="icon" href="../favicon.ico?v=3">
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+    <script>try{var t=localStorage.getItem('rm-theme');document.documentElement.setAttribute('data-theme',t==='light'?'light':'dark');}catch(e){}</script>
+</head>
+
+<body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="nav">
+        <a href="../" class="brand">RM<span>.</span></a>
+        <nav aria-label="Primary">
+            <a href="../#about">About</a>
+            <a href="../#experience">Experience</a>
+            <a href="./">Case Studies</a>
+            <a href="../notes/">Notes</a>
+            <a href="../#contact">Contact</a>
+        </nav>
+        <a class="nav-cta" href="../resume/">Resume</a>
+    </header>
+
+    <main id="main" class="detail-wrap">
+        <p class="breadcrumb"><a href="../">home</a> / <a href="./">case studies</a> / llm-inventory-agent</p>
+
+        <div class="detail-header">
+            <p class="subtitle">Applied AI · 2025 · Addverb Technologies · Product suite</p>
+            <h1>LLM Inventory Assistant</h1>
+            <p class="lede">
+                A conversational assistant that answers warehouse operators' inventory questions ("where is SKU X?",
+                "why is this order not released?") from live data and product documentation. It resolved 75%+ of
+                queries without a human and cut support tickets by 40%.
+            </p>
+        </div>
+
+        <p class="disclaimer">
+            Simplified reference architecture written from memory for discussion. Client identity,
+            service names, topology, configuration and code are deliberately omitted or generalised.
+        </p>
+
+        <div class="meta-grid">
+            <div><span>Role</span>Designer and implementer</div>
+            <div><span>Pattern</span>RAG + allowlisted tool calls</div>
+            <div><span>Auto-resolved</span>75%+ of queries</div>
+            <div><span>Support load</span>−40% tickets</div>
+        </div>
+
+        <section class="detail-section">
+            <h2>Problem</h2>
+            <ul>
+                <li>Operators and site supervisors raised support tickets for questions the system could already
+                    answer: stock location, order status, why a task was blocked.</li>
+                <li>Answering them meant a support engineer running queries by hand or looking things up in SOPs.
+                    It was slow for the operator and repetitive for the team.</li>
+            </ul>
+        </section>
+
+        <section class="detail-section">
+            <h2>Design</h2>
+            <ul>
+                <li><strong>Two knowledge sources:</strong> retrieval over product docs and SOPs for "how / why"
+                    questions, and <strong>tool calls</strong> into live inventory data for "what / where" questions.</li>
+                <li><strong>Tools, not SQL:</strong> the model never writes SQL. It picks one tool from an
+                    <strong>allowlist</strong> (e.g. <code>getStockBySku</code>, <code>getOrderStatus</code>,
+                    <code>getLocationContents</code>) and fills typed parameters. Each tool is a parameterised,
+                    read-only query behind a service API.</li>
+                <li><strong>Grounded answers:</strong> the final answer must cite what it is based on (the tool result
+                    or the document passage). If neither supports an answer, the assistant says so and hands off.</li>
+            </ul>
+        </section>
+
+        <section class="detail-section">
+            <h2>Reference architecture</h2>
+            <div class="diagram">
+                <pre class="mermaid">
+flowchart LR
+  U["Operator UI chat"] --> API["Assistant Service (Spring Boot)"]
+  API --> LLM["LLM API"]
+  LLM -->|tool choice + params| API
+  API --> V{"Validate against allowlist + schema"}
+  V -- ok --> T["Read-only tool layer"]
+  V -- rejected --> H["Human hand-off / ticket"]
+  T --> DB[("Inventory DB - read replica / read-only user")]
+  API --> RET["Retriever"]
+  RET --> IDX[("Doc + SOP index")]
+  T -->|rows, capped| API
+  RET -->|passages| API
+  API -->|answer + sources| U
+                </pre>
+            </div>
+        </section>
+
+        <section class="detail-section">
+            <h2>Request flow</h2>
+            <div class="diagram">
+                <pre class="mermaid">
+sequenceDiagram
+  autonumber
+  participant O as Operator
+  participant S as Assistant Service
+  participant L as LLM
+  participant T as Tool Layer
+  participant R as Retriever
+  O->>S: "Where is SKU 1234?"
+  S->>R: retrieve relevant SOP passages
+  R-->>S: passages
+  S->>L: question + passages + tool schemas
+  L-->>S: call getStockBySku(sku=1234)
+  S->>S: validate tool name + params
+  S->>T: execute (read-only, row limit)
+  T-->>S: locations + quantities
+  S->>L: tool result
+  L-->>S: grounded answer
+  S-->>O: answer + source
+                </pre>
+            </div>
+        </section>
+
+        <section class="detail-section">
+            <h2>Guardrails</h2>
+            <ul>
+                <li><strong>Read-only by construction:</strong> a read-only database user and no write tools at all.
+                    A prompt can't talk its way into a mutation.</li>
+                <li><strong>Allowlist + schema validation:</strong> an unknown tool or invalid parameter is rejected before anything executes.</li>
+                <li><strong>Row limits and timeouts</strong> on every tool, so one question can't load the database.</li>
+                <li><strong>No personal data</strong> in tool outputs or prompts; inventory and order-state fields only.</li>
+                <li><strong>Fallback to a human:</strong> low confidence, no grounding, or a rejected tool call creates a ticket with the conversation attached.</li>
+            </ul>
+        </section>
+
+        <section class="detail-section">
+            <h2>Trade-offs</h2>
+            <div class="table-wrap">
+                <table class="tradeoffs">
+                    <thead><tr><th>Decision</th><th>Chose</th><th>Over</th><th>Why</th></tr></thead>
+                    <tbody>
+                        <tr><td>Data access</td><td>Allowlisted, parameterised tools</td><td>Text-to-SQL</td><td>Predictable, reviewable queries; no injection or runaway scans against production</td></tr>
+                        <tr><td>Knowledge</td><td>Retrieval over docs</td><td>Fine-tuning</td><td>Docs change often; retrieval updates instantly and can cite its source</td></tr>
+                        <tr><td>Failure behaviour</td><td>Refuse and hand off</td><td>Best-guess answers</td><td>A wrong stock answer on the floor costs more than a ticket</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="detail-section">
+            <h2>Impact</h2>
+            <ul>
+                <li><strong>75%+</strong> of operator inventory queries resolved without a human.</li>
+                <li><strong>−40%</strong> support ticket volume.</li>
+            </ul>
+        </section>
+
+        <section class="detail-section">
+            <h2>How I'd evaluate it today</h2>
+            <ul>
+                <li>A versioned <strong>golden set</strong> of real (anonymised) operator questions with expected tool calls and answers, run in CI on every prompt or tool change.</li>
+                <li>Separate scores for <strong>tool selection</strong>, <strong>parameter correctness</strong> and <strong>answer faithfulness</strong> to the tool output, so a regression points at the failing layer.</li>
+                <li>Production telemetry: hand-off rate, rejected tool calls, and thumbs-down by question type.</li>
+                <li>Adversarial cases: prompt-injection attempts in SKU fields, requests for write actions, out-of-scope questions.</li>
+            </ul>
+        </section>
+
+        <section class="detail-section">
+            <h2>What I would do differently</h2>
+            <ul>
+                <li>Build the golden-set evaluation before the first release, not after.</li>
+                <li>Log structured traces (prompt, tool call, result size, latency) from day one to make tuning data-driven.</li>
+            </ul>
+        </section>
+
+        <section class="detail-section">
+            <div class="talking-points">
+                <h3>// interview talking points</h3>
+                <ol>
+                    <li>Why tool calling beats text-to-SQL for production data, and what it costs in flexibility.</li>
+                    <li>Defence in depth: read-only user, allowlist, schema validation, row limits.</li>
+                    <li>How "auto-resolved" was defined and measured against ticket volume.</li>
+                    <li>How I would evaluate and regression-test an LLM feature.</li>
+                </ol>
+            </div>
+        </section>
+
+        <section class="detail-section">
+            <h2>Tech</h2>
+            <ul class="stack-row">
+                <li>Java 17</li><li>Spring Boot</li><li>LLM APIs</li><li>RAG</li><li>Tool calling</li><li>SQL</li>
+            </ul>
+        </section>
+
+        <div class="page-nav">
+            <a href="event-observability.html">← prev: event observability</a>
+            <a href="shuttle-telemetry.html">next: shuttle telemetry →</a>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <p>© <span id="year">2026</span> Rahul Maurya · Case studies are simplified and anonymised and contain no proprietary code or client data.</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js" integrity="sha384-WmdflGW9aGfoBdHc4rRyWzYuAjEmDwMdGdiPNacbwfGKxBW/SO6guzuQ76qjnSlr" crossorigin="anonymous" defer></script>
+    <script src="../js/theme.js" defer></script>
+    <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+</body>
+
+</html>

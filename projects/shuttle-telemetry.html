@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Robotic Shuttle Integration &amp; Telemetry · Case Study — Rahul Maurya</title>
+    <meta name="description" content="Case study: integrating third-party robotic shuttles and lifts into an ASRS platform, with a MongoDB telemetry pipeline at 99.6% capture and 70% faster downtime diagnosis (Java, Spring Boot, RabbitMQ).">
+    <link rel="canonical" href="https://maurya2811.github.io/Portfolio/projects/shuttle-telemetry.html">
+    <meta property="og:image" content="https://maurya2811.github.io/Portfolio/images/og-card.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta property="og:title" content="Robotic Shuttle Integration &amp; Telemetry — Rahul Maurya">
+    <meta property="og:description" content="Third-party shuttle integration and a real-time telemetry pipeline: 50+ devices, 99.6% capture, -70% downtime diagnosis.">
+    <meta property="og:type" content="article">
+    <link rel="icon" href="../favicon.ico?v=3">
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+    <script>try{var t=localStorage.getItem('rm-theme');document.documentElement.setAttribute('data-theme',t==='light'?'light':'dark');}catch(e){}</script>
+</head>
+
+<body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="nav">
+        <a href="../" class="brand">RM<span>.</span></a>
+        <nav aria-label="Primary">
+            <a href="../#about">About</a>
+            <a href="../#experience">Experience</a>
+            <a href="./">Case Studies</a>
+            <a href="../notes/">Notes</a>
+            <a href="../#contact">Contact</a>
+        </nav>
+        <a class="nav-cta" href="../resume/">Resume</a>
+    </header>
+
+    <main id="main" class="detail-wrap">
+        <p class="breadcrumb"><a href="../">home</a> / <a href="./">case studies</a> / shuttle-telemetry</p>
+
+        <div class="detail-header">
+            <p class="subtitle">Event-Driven Integration · Sep 2025 – Dec 2025 · Addverb Technologies</p>
+            <h1>Robotic Shuttle Integration &amp; Telemetry</h1>
+            <p class="lede">
+                Integrated a third-party fleet of robotic shuttles and lifts into an existing ASRS
+                platform for a US healthcare logistics provider, and built the telemetry pipeline
+                and health dashboards operators now use to find and fix hardware problems.
+            </p>
+        </div>
+
+        <p class="disclaimer">
+            Simplified reference architecture written from memory for discussion. Client identity,
+            hardware vendor, service names, protocols' message formats, configuration and code are
+            deliberately omitted or generalised.
+        </p>
+
+        <div class="meta-grid">
+            <div><span>Role</span>Software Development Engineer</div>
+            <div><span>Scale</span>50+ shuttles and lifts</div>
+            <div><span>Capture</span>99.6% of telemetry events</div>
+            <div><span>Impact</span>-70% downtime diagnosis time</div>
+        </div>
+
+        <section class="detail-section">
+            <h2>Context</h2>
+            <p>
+                The site already ran our ASRS software for storage and retrieval. The client added a
+                fleet of robotic shuttles and lifts from a third-party vendor. That hardware had its own
+                controller, its own state and its own interfaces (TCP and REST), and it had to behave
+                as part of one system from the operator's point of view.
+            </p>
+        </section>
+
+        <section class="detail-section">
+            <h2>Problem</h2>
+            <ul>
+                <li>Two stacks with different protocols and two copies of the truth about where a shuttle
+                    was and what it was doing.</li>
+                <li>No single view of fleet health. When a shuttle stalled, a hand-off failed or a lift
+                    timed out, engineers pieced the story together from separate logs.</li>
+                <li>Diagnosis took long enough to hurt throughput on a site with strict service levels.</li>
+            </ul>
+        </section>
+
+        <section class="detail-section">
+            <h2>What I did</h2>
+            <ul>
+                <li><strong>Built the hardware adapter.</strong> A Spring Boot service that speaks the vendor's
+                    TCP and REST interfaces on one side and our internal command and event contracts on the
+                    other. The rest of the platform never sees vendor-specific formats (an anti-corruption layer).</li>
+                <li><strong>Built the telemetry pipeline.</strong> The adapter publishes status and fault events to
+                    RabbitMQ. An ingestor consumes them and upserts the current state per device into MongoDB,
+                    plus an append-only history for trend queries. It covers 50+ devices at <strong>99.6% capture</strong>.</li>
+                <li><strong>Made consumption safe to retry.</strong> Consumers are idempotent (dedupe on message id
+                    and ignore out-of-order state). Messages that keep failing go to a dead-letter queue and can
+                    be replayed.</li>
+                <li><strong>Built health dashboards</strong> in Grafana showing connectivity, fault state, queue depth
+                    and stale devices, which cut downtime diagnosis time by <strong>70%</strong>.</li>
+            </ul>
+        </section>
+
+        <section class="detail-section">
+            <h2>Reference architecture</h2>
+            <div class="diagram">
+                <pre class="mermaid">
+flowchart LR
+  SH["Robotic shuttles (50+)"] -->|TCP / REST| ADP["Hardware Adapter"]
+  LF["Lifts"] -->|TCP / REST| ADP
+  ADP -->|commands| SH
+  ADP <--> MQ[("RabbitMQ")]
+  MQ --> CORE["ASRS Core Services"]
+  CORE --> SQL[("MySQL")]
+  MQ --> ING["Telemetry Ingestor"]
+  ING --> CUR[("MongoDB: current state")]
+  ING --> HIST[("MongoDB: event history")]
+  MQ -. failed .-> DLQ[("Dead-letter queue")]
+  DLQ -. replay .-> ING
+  CUR --> DASH["Grafana health dashboards"]
+  HIST --> DASH
+                </pre>
+            </div>
+            <p class="callout">
+                <strong>Design principle:</strong> vendor protocols stop at the adapter. Inside the platform,
+                every device is described by the same small set of commands and events, so a second vendor
+                would need a new adapter and nothing else.
+            </p>
+        </section>
+
+        <section class="detail-section">
+            <h2>Low-level flow — telemetry path</h2>
+            <div class="diagram">
+                <pre class="mermaid">
+sequenceDiagram
+  autonumber
+  participant S as Shuttle / Lift
+  participant A as Hardware Adapter
+  participant Q as RabbitMQ
+  participant I as Telemetry Ingestor
+  participant M as MongoDB
+  participant G as Grafana
+  S->>A: status / fault message
+  A->>A: translate to internal event
+  A->>Q: publish device.telemetry
+  Q->>I: deliver (at-least-once)
+  I->>I: skip if message id seen or older than stored state
+  I->>M: upsert current state, append history
+  I-->>Q: ack
+  G->>M: query recent window
+  Note over Q,I: After N failed attempts the message goes to the DLQ for replay
+                </pre>
+            </div>
+        </section>
+
+        <section class="detail-section">
+            <h2>Trade-offs</h2>
+            <div class="table-wrap">
+                <table class="tradeoffs">
+                    <thead><tr><th>Decision</th><th>Chose</th><th>Over</th><th>Why</th></tr></thead>
+                    <tbody>
+                        <tr><td>Vendor integration</td><td>Dedicated adapter service</td><td>Calling vendor APIs from core services</td><td>Keeps vendor formats and failure modes out of the core; one place to change if the vendor API changes</td></tr>
+                        <tr><td>Telemetry store</td><td>MongoDB (current state + history)</td><td>The transactional SQL database</td><td>Device payloads vary by type; high write volume would compete with order transactions</td></tr>
+                        <tr><td>Delivery semantics</td><td>At-least-once with idempotent consumers</td><td>Trying for exactly-once</td><td>Simpler and reliable with RabbitMQ; duplicates are cheap to detect</td></tr>
+                        <tr><td>Failed messages</td><td>DLQ with replay</td><td>Infinite retry or drop</td><td>Infinite retry blocks the queue; dropping loses data an engineer may need for diagnosis</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="detail-section">
+            <h2>Failure modes I designed for</h2>
+            <ul>
+                <li><strong>Device goes silent:</strong> a stale-heartbeat check flags it on the dashboard instead of showing its last good state.</li>
+                <li><strong>Broker redelivery or failover:</strong> idempotent upserts mean redelivered events don't corrupt state.</li>
+                <li><strong>Out-of-order messages:</strong> events older than the stored state are ignored for current state but kept in history.</li>
+                <li><strong>Vendor API errors:</strong> the adapter translates them into fault events with a reason, so they're visible rather than swallowed.</li>
+            </ul>
+        </section>
+
+        <section class="detail-section">
+            <h2>Impact</h2>
+            <ul>
+                <li>50+ third-party shuttles and lifts working as part of the ASRS platform.</li>
+                <li><strong>99.6%</strong> telemetry capture rate.</li>
+                <li>Downtime diagnosis time <strong>-70%</strong>.</li>
+            </ul>
+        </section>
+
+        <section class="detail-section">
+            <h2>What I would do differently</h2>
+            <ul>
+                <li>Use a purpose-built time-series collection or store for history from the start, with a retention policy.</li>
+                <li>Define the internal device contract as a versioned schema up front, so adding fields doesn't need coordinated releases.</li>
+            </ul>
+        </section>
+
+        <section class="detail-section">
+            <div class="talking-points">
+                <h3>// interview talking points</h3>
+                <ol>
+                    <li>Anti-corruption layer: why vendor protocols stop at the adapter.</li>
+                    <li>At-least-once delivery, idempotency keys and handling out-of-order events.</li>
+                    <li>DLQ and replay: when to retry, when to park, how to replay safely.</li>
+                    <li>How "capture rate" was measured and what the missing 0.4% was.</li>
+                </ol>
+            </div>
+        </section>
+
+        <section class="detail-section">
+            <h2>Tech</h2>
+            <ul class="stack-row">
+                <li>Java 17</li><li>Spring Boot</li><li>REST</li><li>TCP</li><li>RabbitMQ</li>
+                <li>MongoDB</li><li>MySQL</li><li>Docker</li><li>Kubernetes</li><li>Grafana</li>
+            </ul>
+        </section>
+
+        <div class="page-nav">
+            <a href="llm-inventory-agent.html">← prev: LLM inventory agent</a>
+            <a href="tote-routing.html">next: tote routing →</a>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <p>© <span id="year">2026</span> Rahul Maurya · Case studies are simplified and anonymised and contain no proprietary code or client data.</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js" integrity="sha384-WmdflGW9aGfoBdHc4rRyWzYuAjEmDwMdGdiPNacbwfGKxBW/SO6guzuQ76qjnSlr" crossorigin="anonymous" defer></script>
+    <script src="../js/theme.js" defer></script>
+    <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+</body>
+
+</html>
