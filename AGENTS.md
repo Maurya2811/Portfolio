@@ -12,7 +12,7 @@
 
 | Repo | Visibility | Holds |
 |---|---|---|
-| `Portfolio` (this repo) | **PUBLIC** (GitHub Pages) | Anonymised site, resume source, scripts |
+| `Portfolio` (this repo) | **PUBLIC** (GitHub Pages) | Site (clients named, internals generic), resume source, scripts |
 | `personal-vault` | **PRIVATE** | Facts ledger with real client names, phone numbers, ID scans, career strategy, job-search tracker, interview story bank |
 
 Expected layout after cloning on a new laptop:
@@ -109,9 +109,7 @@ breaching employer or client confidentiality**.
 
 Allowed in public:
 - Employer names (Addverb Australia, Addverb Technologies, NEC) and job titles.
-- Anonymised client descriptors only: "tier-1 global retail brand, 3PL-operated DC",
-  "US healthcare logistics provider", "D2C retailer fulfilment centre",
-  "tyre manufacturing plant", "large Indian grocery retailer".
+- **Client and project names Rahul delivered for (owner decision 2026-10-30):** Maersk, Adidas, UPS Healthcare, Movu (shuttle vendor), Siemens (metro rail), Reliance Retail (VF-Manual), Lenskart, MRF.
 - Generic, textbook-level patterns: event-driven choreography, idempotent consumers,
   DLQ + replay, outbox, adapters / anti-corruption layers, Dijkstra / Yen's K-shortest,
   scored slot selection (concept only), RAG + allowlisted tools.
@@ -121,7 +119,7 @@ Allowed in public:
 - Rahul's own measured outcomes as listed in section 3.
 
 Never in public:
-- Client or hardware-vendor names, client site cities, internal product / service
+- Clients Rahul did not work on, internal product / service
   codenames, repository names, file paths, hostnames, IPs, queue / exchange / topic
   names, DB / table names, config values, credentials, screenshots of internal tools.
 - Contract values, SLA figures, pricing, internal cost data.
@@ -129,8 +127,10 @@ Never in public:
 - Real code from employer repositories. Demo code must be written from scratch.
 - Phone numbers, ID documents, salary or job-search strategy.
 
-Every case study carries the disclaimer: *simplified and anonymised; no proprietary
-code, configuration, topology or client data.*
+**Owner decision (2026-10-30):** client and project names are public on the site and resumes. What stays private is everything *inside* the client systems listed under "Never in public" below.
+
+Every case study carries a disclaimer: *simplified; internal service names, topology,
+configuration and code are omitted or generalised.*
 
 ---
 
@@ -139,7 +139,7 @@ code, configuration, topology or client data.*
 ```
 Portfolio/
 ├── index.html               Home: hero + metrics, about, experience, featured case studies, skills, notes, contact
-├── projects/                Case studies (anonymised)
+├── projects/                Case studies (clients named, internals generic)
 │   ├── index.html           listing
 │   ├── retail-dc-platform.html     flagship (current role)
 │   ├── event-observability.html    design deep-dive behind the flagship
@@ -176,6 +176,7 @@ Portfolio/
 python3 -m http.server 8000                 # preview at http://localhost:8000
 python3 scripts/build_resume.py             # rebuild resume page + both PDFs (needs Chrome/Chromium)
 python3 scripts/build_resume.py --no-pdf    # web page only
+python3 scripts/build_resume.py --named     # + PRIVATE PDFs with real client names -> ../personal-vault/resumes/*_named.pdf
 python3 -m unittest discover -s tests       # tests
 python3 scripts/check.py                    # publish gate; MUST print OK before any push
 ```
@@ -232,6 +233,9 @@ At the end of any session that changed facts, files or plans:
 
 ## 10. Change log (append-only)
 
+- **2026-10-30 (e)**: Client names allowed publicly (owner decision): removed from the blocklist, baked into `data/resume.json`, named in case-study subtitles/ledes and a "Delivered for" strip on the home page. Codenames, paths, other clients, contract figures and phone numbers remain blocked.
+- **2026-10-30 (d)**: Client/project names in public resume PDFs at Rahul's request (HTML stays anonymised). India resume: 4 named projects with India-only short bullets, still 1 page; empty sections hidden per variant.
+- **2026-10-30 (c)**: Project dates on the header line (no empty date row). India header: "Open to relocate · 30-day notice period". `--named` build writes private PDFs with real client names (map in `personal-vault/facts/client-names.json`) for direct applications; public PDFs stay anonymised.
 - **2026-10-30 (b)**: Title now "Software Engineer (Forward Deployed)". Added: 20+ production incidents, mentoring interns, metro-rail FDE engagement (client anonymised and added to the vault blocklist), Celebal internship (AU resume + site only). `only` filter now also applies to experience entries.
 - **2026-10-30**: Recruiter pass. Outcome-led case-study titles; "What I bring" block; skills now include Angular, nginx, reliability/RCA, AI-assisted dev. Resume: jargon translated (fulfilment throughput), incident-RCA bullet, per-variant content (`only`), India variant is 1 page (`compact`), ATS-safe print (visible URLs, `|` separators, ASCII arrows/minus, standard `Projects` heading, non-wrapping URLs). LinkedIn/GitHub copy drafted in the vault (`job-search/profiles-copy.md`).
 - **2026-10-29 (b)**: Facts confirmed by Rahul: CGPA 8.89, LLM assistant 75%+, Grafana 200+ dashboards. AU work rights (Subclass 482, nomination transfer) added to the AU PDF via the vault. Experience years computed at build time. Evergreen home copy, resume-first hero CTA, `og:image` social card on all pages.

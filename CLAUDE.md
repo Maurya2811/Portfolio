@@ -20,14 +20,14 @@ python3 scripts/check.py                  # publish gate, must print OK before a
 Python 3 stdlib only. Chrome or Chromium is needed for PDFs.
 
 ## Module map
-- `index.html`: home page. `projects/`: anonymised case studies. `notes/`: write-ups.
+- `index.html`: home page. `projects/`: case studies (clients named, internals generic). `notes/`: write-ups.
 - `data/resume.json` is the source of all resume outputs. `resume/*` is generated, so never hand-edit it.
 - `data/site.json` + `js/site.js`: contact-link hydration (HTML keeps a fallback).
 - `css/styles.css`: tokens + components. `js/theme.js`: dark default, Mermaid theming.
 - `scripts/check.py`: blocks confidential terms (list in the vault), IPs, paths and broken links.
 
 ## Hard rules
-1. **Public repo.** No client or vendor names, internal codenames, paths, hosts,
+1. **Public repo.** Client names are allowed; no internal codenames, other clients, paths, hosts,
    contract figures, phone numbers or personal documents. See AGENTS.md section 4.
 2. Never invent experience or metrics. Use AGENTS.md section 3 wording verbatim.
 3. Never `git commit` / `git push` unless Rahul explicitly asks in that request.

@@ -56,6 +56,7 @@ Rejects: a literal `{years}` in output, or rounding up (e.g. `3+` in Mar 2027).
 Trigger: an experience entry, project, skill or bullet in `data/resume.json` carries `"only": ["au"]` (bullets may be plain strings or `{"text": ..., "only": [...]}`).
 Observable: the item renders in the listed variants only; the web page renders the `au` variant; plain-string bullets render everywhere.
 Rejects: an `only: ["au"]` project appearing in the India print output, or object bullets rendering as `{'text': ...}`.
+A section whose items are all filtered out for a variant (e.g. Certifications) renders no heading.
 
 ## AC-12 Compact print variant
 Trigger: a variant has `"compact": true`.
@@ -66,3 +67,18 @@ Rejects: compact styling leaking into the AU print or the web page.
 Trigger: any print variant is rendered.
 Observable: links appear as visible plain URLs without the scheme (e.g. `github.com/x`); the contact line uses ` | ` separators; the text contains no `→` or `−` (rendered as `to` and `-`); the projects heading is exactly `Projects`.
 Rejects: a print PDF whose only link text is a label such as "GitHub", or one containing `→`.
+
+## AC-14 Project header on one line
+Trigger: a project is rendered (web or print).
+Observable: the project name, context and dates share one header element (`<div class="proj-head">`), with no empty date-only line.
+Rejects: `<span></span><span>{dates}</span>` (an empty left cell that pushes dates onto their own line).
+
+## AC-15 Private named resumes
+Trigger: `build_resume.py --named` runs with a private names map (`../personal-vault/facts/client-names.json`, `{anonymised phrase: real name}`).
+Observable: each variant PDF is written to `../personal-vault/resumes/` with `_named` in the filename, and its text has every mapped phrase replaced by the real name; `resume/` (public) PDFs and `resume/index.html` are not rewritten with names.
+Rejects: a real client name appearing in any file under the public `resume/` folder, or `--named` silently producing anonymised output when the map is missing (it must print `WARN no client-names map` and skip).
+
+## AC-16 Owner-approved names in public PDFs (supersedes the public part of AC-15)
+Trigger: `data/resume.json` has `"namesInPublicPdfs": true` and the private names map exists.
+Observable: public PDFs in `resume/` are built with the names applied; `resume/index.html` never contains names; without the map (e.g. a laptop without the vault) public PDFs are built anonymised and `WARN no client-names map` is printed.
+Rejects: names appearing in any HTML file, or a crash when the vault is absent.

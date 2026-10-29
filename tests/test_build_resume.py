@@ -112,6 +112,40 @@ class BuildResumeTests(unittest.TestCase):
         self.assertIn("Intern Co", br.render_print(data, "au", CONTACT))
         self.assertNotIn("Intern Co", br.render_print(data, "india", CONTACT))
 
+    def test_project_header_single_line(self):
+        html = br.render_print(DATA, "au", CONTACT)
+        self.assertRegex(html, r'<div class="proj-head"><h3>P <span class="ctx">· ctx</span></h3><span class="date">2025</span></div>')
+        self.assertNotIn("<span></span>", html)
+
+    def test_apply_names(self):
+        html = br.render_print(DATA, "au", CONTACT)
+        named = br.apply_names(html, {"ctx": "Acme Corp", "Co A": "Real Co"})
+        self.assertIn("Acme Corp", named)
+        self.assertIn("Real Co", named)
+        self.assertNotIn("· ctx<", named)
+
+    def test_named_map_missing_warns(self):
+        with tempfile.TemporaryDirectory() as d:
+            buf = io.StringIO()
+            with redirect_stdout(buf):
+                names = br.load_names(Path(d) / "missing.json")
+        self.assertIsNone(names)
+        self.assertIn("WARN no client-names map", buf.getvalue())
+
+    def test_public_names_flag(self):
+        names = {"ctx": "Acme"}
+        self.assertIsNone(br.public_names(DATA, names))
+        data = dict(DATA, namesInPublicPdfs=True)
+        self.assertEqual(br.public_names(data, names), names)
+        self.assertIsNone(br.public_names(data, None))
+        self.assertNotIn("Acme", br.render_web(data))
+
+    def test_empty_learning_section_hidden(self):
+        data = json.loads(json.dumps(DATA))
+        data["learning"] = [{"text": "Cert", "only": ["au"]}]
+        self.assertNotIn("Certifications", br.render_print(data, "india", CONTACT))
+        self.assertIn("Certifications", br.render_print(data, "au", CONTACT))
+
     def test_compact_variant(self):
         data = json.loads(json.dumps(DATA))
         data["variants"]["india"]["compact"] = True

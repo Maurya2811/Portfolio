@@ -59,8 +59,8 @@
             <h2>I build and run event-driven Java systems that real operations depend on 24/7.</h2>
             <p class="lede">
                 Since 2024 I have shipped Spring Boot microservices, messaging pipelines and Kubernetes deployments for
-                warehouse automation in India, the US and Australia. Right now I'm forward-deployed on a live
-                distribution centre in Melbourne, where measuring before changing anything raised picking throughput by 50%.
+                warehouse automation in India, the US and Australia. Right now I'm forward-deployed on the Adidas
+                distribution centre in Melbourne (operated by Maersk), where measuring before changing anything raised picking throughput by 50%.
             </p>
 
             <div class="hero-metrics" aria-label="Headline results">
@@ -69,6 +69,8 @@
                 <div class="metric"><b>10K+</b><span>events/min with<br>zero data loss</span></div>
                 <div class="metric"><b>20+</b><span>microservices run in<br>24/7 production</span></div>
             </div>
+
+            <p class="hero-clients"><span>Delivered for</span> Maersk · Adidas · UPS Healthcare · Siemens · Reliance Retail · Lenskart · MRF</p>
 
             <div class="hero-cta">
                 <a class="btn btn-primary" href="resume/Rahul_Maurya.pdf" target="_blank" rel="noopener" data-bind-href="owner.resumePdf">Download resume (PDF)</a>
@@ -130,10 +132,10 @@
                         <span class="tl-date">Jan 2026 – Present · Melbourne</span>
                     </div>
                     <ul>
-                        <li>Forward-deployed on a 24/7, <strong>20+ microservice</strong> order-fulfilment platform (Java, Spring Boot, RabbitMQ, MongoDB, Angular, Kubernetes) for a tier-1 global retail brand; I own change requests from client scoping to production rollout.</li>
+                        <li>Forward-deployed on a 24/7, <strong>20+ microservice</strong> order-fulfilment platform (Java, Spring Boot, RabbitMQ, MongoDB, Angular, Kubernetes) for the Maersk-operated Adidas distribution centre in Melbourne; I own change requests from client scoping to production rollout.</li>
                         <li>Raised goods-to-person picking throughput <strong>800 → 1,200 totes/hr (+50%)</strong> by tracing per-stage dwell time and fixing work-release and allocation logic. This closed the gap to the contracted SLA.</li>
                         <li>Led root-cause analysis for <strong>20+ production incidents</strong> (consumer crashes, message storms, race conditions) and shipped the fixes, runbooks and recovery tools.</li>
-                        <li>Also forward-deployed on a metro rail project for a global engineering company, managing UAT test cases and defect triage with the client.</li>
+                        <li>Also forward-deployed on a Siemens metro rail project, managing UAT test cases and defect triage with the client.</li>
                         <li>Built a cross-service irregular-event store (RabbitMQ → MongoDB) with Grafana alerting and Angular operator tools, so root-cause analysis is a single correlated query instead of a multi-pod log search.</li>
                         <li>Segregated competing business flows on shared automation: <strong>+30%</strong> client operational efficiency.</li>
                     </ul>
@@ -148,7 +150,7 @@
                         <li>Built a real-time event pipeline processing <strong>10,000+ events/min with zero data loss</strong> (idempotent consumers, DLQ, replay); <strong>99.6%</strong> uptime across production sites.</li>
                         <li>Mentored interns in the India engineering team.</li>
                         <li>Built an <strong>LLM inventory assistant</strong> (RAG + read-only tool calls) auto-resolving 75%+ of operator queries; −40% support tickets.</li>
-                        <li>Delivered hardware integration, routing-algorithm and ASRS projects for clients in India and the US (see case studies); a Python tool migrated 200+ Grafana dashboards, cutting 8 hrs → 20 min.</li>
+                        <li>Delivered integration, routing and ASRS projects for UPS Healthcare, Lenskart, MRF and Reliance Retail (see case studies); a Python tool migrated 200+ Grafana dashboards, cutting 8 hrs → 20 min.</li>
                     </ul>
                 </li>
                 <li>
@@ -174,10 +176,10 @@
 
         <section class="section" id="projects">
             <h3 class="section-title"><span>03.</span> Featured case studies</h3>
-            <p class="section-sub">Problem, my contribution, architecture, trade-offs and results. All of them are anonymised and contain no proprietary details.</p>
+            <p class="section-sub">Problem, my contribution, architecture, trade-offs and results. Simplified, with no proprietary code or configuration.</p>
             <div class="projects">
                 <a class="project project-link" href="projects/retail-dc-platform.html">
-                    <header><h4>+50% Throughput on a 24/7 Platform of 20+ Java Microservices</h4><span class="tag">Distributed Systems · Forward-deployed</span></header>
+                    <header><h4>+50% Throughput on a 24/7 Platform of 20+ Java Microservices</h4><span class="tag">Maersk / Adidas · Distributed systems</span></header>
                     <p class="problem"><strong>Problem:</strong> a live site stuck at ~800 totes/hr against a contracted SLA, with no cross-service view of where totes lost time.</p>
                     <p class="impact"><strong>Result:</strong> correlated event store, then a work-release fix: <strong>+50%</strong> throughput, SLA met.</p>
                     <ul class="stack"><li>Java</li><li>Spring Boot</li><li>RabbitMQ</li><li>MongoDB</li><li>Kubernetes</li></ul>
@@ -191,14 +193,14 @@
                     <span class="project-cta">Read case study →</span>
                 </a>
                 <a class="project project-link" href="projects/tote-routing.html">
-                    <header><h4>Congestion-Aware Routing Engine: −200 ms per Decision</h4><span class="tag">Algorithms · Performance</span></header>
+                    <header><h4>Congestion-Aware Routing Engine: −200 ms per Decision</h4><span class="tag">Lenskart · Algorithms</span></header>
                     <p class="problem"><strong>Problem:</strong> static FIFO routing ignored congestion and starved pick stations at peak.</p>
                     <p class="impact"><strong>Result:</strong> congestion-aware Dijkstra + K-shortest: <strong>−200 ms</strong>, <strong>+12%</strong> pilot throughput.</p>
                     <ul class="stack"><li>Java</li><li>Graph algorithms</li><li>Spring Boot</li></ul>
                     <span class="project-cta">Read case study →</span>
                 </a>
                 <a class="project project-link" href="projects/shuttle-telemetry.html">
-                    <header><h4>Real-Time Telemetry Pipeline for 50+ Robots (99.6% Capture)</h4><span class="tag">Integration · Real-Time</span></header>
+                    <header><h4>Real-Time Telemetry Pipeline for 50+ Robots (99.6% Capture)</h4><span class="tag">UPS Healthcare · Real-time</span></header>
                     <p class="problem"><strong>Problem:</strong> third-party shuttles kept their own state, so outages took hours to triage.</p>
                     <p class="impact"><strong>Result:</strong> adapter + telemetry pipeline: <strong>99.6%</strong> capture, <strong>−70%</strong> diagnosis time.</p>
                     <ul class="stack"><li>Java</li><li>TCP / REST</li><li>RabbitMQ</li><li>MongoDB</li><li>Grafana</li></ul>
@@ -246,7 +248,7 @@
     </main>
 
     <footer class="footer">
-        <p>© <span id="year">2026</span> Rahul Maurya · Plain HTML &amp; CSS on GitHub Pages · Case studies are anonymised.</p>
+        <p>© <span id="year">2026</span> Rahul Maurya · Plain HTML &amp; CSS on GitHub Pages · Case studies are simplified.</p>
     </footer>
 
     <script src="js/theme.js" defer></script>

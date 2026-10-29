@@ -31,10 +31,10 @@
       "summary": "Software engineer with {years} years building and running high-availability, event-driven backend systems in Java and Spring Boot, from design to 24/7 production. Currently forward-deployed at a live customer site in Melbourne, where I raised fulfilment throughput by 50% and own production reliability across 20+ microservices. Strong in distributed systems, messaging (RabbitMQ, Kafka), Kubernetes, observability and incident root-cause analysis, with full-stack (Angular) and LLM tooling experience."
     },
     "india": {
-      "location": "Melbourne, Australia · Open to relocation to India",
+      "location": "Melbourne, Australia · Open to relocate · 30-day notice period",
       "phone": "india",
       "pdf": "Rahul_Maurya_India.pdf",
-      "summary": "Backend software engineer ({years} years) building high-availability, event-driven Java / Spring Boot microservices that run 24/7 for enterprise clients in India, the US and Australia. +50% throughput, −25% p95 latency, 10,000+ events/min with zero data loss. Looking for SDE-2 / backend roles at product companies.",
+      "summary": "Backend software engineer ({years} years) building high-availability, event-driven Java / Spring Boot microservices for enterprise clients in India, the US and Australia: +50% throughput, -25% p95 latency, 10,000+ events/min with zero data loss. Looking for SDE-2 / backend roles at product companies.",
       "compact": true
     }
   },
@@ -61,7 +61,10 @@
     },
     {
       "group": "Reliability",
-      "items": "Grafana, Jaeger, distributed logging, incident management, root-cause analysis, runbooks"
+      "items": "Grafana, Jaeger, distributed logging, incident management, root-cause analysis, runbooks",
+      "only": [
+        "au"
+      ]
     },
     {
       "group": "AI",
@@ -82,7 +85,7 @@
       "location": "Melbourne, Australia",
       "dates": "Jan 2026 – Present",
       "bullets": [
-        "Forward-deployed on a 24/7, **20+ microservice** order-fulfilment platform (Java 17, Spring Boot, RabbitMQ, MongoDB, SQL Server, Angular, Kubernetes / Helm) for a tier-1 global retail brand; own change requests end to end, from client scoping and estimation to production rollout.",
+        "Forward-deployed on a 24/7, **20+ microservice** order-fulfilment platform (Java 17, Spring Boot, RabbitMQ, MongoDB, SQL Server, Angular, Kubernetes / Helm) for the Maersk-operated Adidas distribution centre; own change requests end to end, from client scoping and estimation to production rollout.",
         "Raised fulfilment throughput by **50% (800 → 1,200 totes/hr)** by measuring per-stage dwell time and fixing work release and allocation logic, closing the gap to the contracted SLA and unblocking a **seven-figure (AUD)** contractual milestone.",
         "Led root-cause analysis for **20+ production incidents** across the distributed stack (consumer crashes, message storms, race conditions, retry drift), shipping fixes, runbooks, anomaly detectors and design / RCA documents that keep a live site running.",
         {
@@ -98,7 +101,7 @@
           ]
         },
         {
-          "text": "Forward-deployed on a second engagement, a metro rail project for a global engineering company: managed UAT test cases and defect triage with the client in Azure DevOps.",
+          "text": "Forward-deployed on a second engagement, a Siemens metro rail project: managed UAT test cases and defect triage with the client in Azure DevOps.",
           "only": [
             "au"
           ]
@@ -159,44 +162,82 @@
   ],
   "projects": [
     {
-      "name": "Real-Time Telemetry Pipeline for 50+ Robots",
-      "context": "US healthcare logistics provider",
+      "name": "UPS Healthcare: Movu Robotic Shuttle Integration & Telemetry",
+      "context": "United States",
       "dates": "Sep 2025 – Dec 2025",
       "link": "https://maurya2811.github.io/Portfolio/projects/shuttle-telemetry.html",
       "bullets": [
-        "Integrated third-party robotic shuttles and lifts through TCP / REST adapters; MongoDB telemetry pipeline at **99.6% capture** across 50+ devices; health dashboards cut downtime diagnosis by **70%**."
+        {
+          "text": "Integrated third-party robotic shuttles and lifts through TCP / REST adapters; MongoDB telemetry pipeline at **99.6% capture** across 50+ devices; health dashboards cut downtime diagnosis by **70%**.",
+          "only": [
+            "au"
+          ]
+        },
+        {
+          "text": "TCP / REST adapters for third-party shuttles; MongoDB telemetry at **99.6% capture** (50+ devices); **-70%** diagnosis time.",
+          "only": [
+            "india"
+          ]
+        }
       ]
     },
     {
-      "name": "Congestion-Aware Routing Engine",
-      "context": "D2C retailer fulfilment centre",
+      "name": "Lenskart: Congestion-Aware Tote Routing",
+      "context": "Bhiwadi, India",
       "dates": "Jun 2025 – Aug 2025",
       "link": "https://maurya2811.github.io/Portfolio/projects/tote-routing.html",
       "bullets": [
-        "Graph-based routing in Java (Dijkstra plus Yen's K-shortest alternates on congestion-weighted edges): **−200 ms** per routing decision, **−15%** path resolution time, **+12%** pilot throughput."
+        {
+          "text": "Graph-based routing in Java (Dijkstra plus Yen's K-shortest alternates on congestion-weighted edges): **−200 ms** per routing decision, **−15%** path resolution time, **+12%** pilot throughput.",
+          "only": [
+            "au"
+          ]
+        },
+        {
+          "text": "Java graph routing (Dijkstra + Yen's K-shortest, congestion-weighted): **-200 ms** per decision, **+12%** pilot throughput.",
+          "only": [
+            "india"
+          ]
+        }
       ]
     },
     {
-      "name": "Robot Orchestration for High-Density Storage",
-      "context": "Tyre manufacturing plant",
+      "name": "MRF Ankenpally: 5-Deep 9-Level ASRS",
+      "context": "Hyderabad, India",
       "dates": "Oct 2024 – May 2025",
       "link": "https://maurya2811.github.io/Portfolio/projects/deep-lane-asrs.html",
       "bullets": [
-        "Orchestrated cranes, shuttles, duplex lifts and conveyors for **500+ daily transactions**; cut client interface testing from **3 months to 3 weeks** by helping QA and Process teams complete interface development."
-      ],
-      "only": [
-        "au"
+        {
+          "text": "Orchestrated cranes, shuttles, duplex lifts and conveyors for **500+ daily transactions**; cut client interface testing from **3 months to 3 weeks** by helping QA and Process teams complete interface development.",
+          "only": [
+            "au"
+          ]
+        },
+        {
+          "text": "Orchestrated cranes, shuttles and duplex lifts for **500+ daily transactions**; interface testing cut from 3 months to 3 weeks.",
+          "only": [
+            "india"
+          ]
+        }
       ]
     },
     {
-      "name": "Warehouse Management System Delivery",
-      "context": "Large Indian grocery retailer",
+      "name": "Reliance Retail: VF-Manual WMS",
+      "context": "India",
       "dates": "2024",
       "bullets": [
-        "Fixed **70+ critical UAT defects** and ran 14 demos for senior client leadership; received a formal note of appreciation from the project manager."
-      ],
-      "only": [
-        "au"
+        {
+          "text": "Fixed **70+ critical UAT defects** and ran 14 demos for senior client leadership; received a formal note of appreciation from the project manager.",
+          "only": [
+            "au"
+          ]
+        },
+        {
+          "text": "Fixed **70+ critical UAT defects**, ran 14 leadership demos; formal note of appreciation from the PM.",
+          "only": [
+            "india"
+          ]
+        }
       ]
     },
     {
@@ -220,7 +261,12 @@
     }
   ],
   "learning": [
-    "AWS Certified Solutions Architect – Associate (in preparation)",
+    {
+      "text": "AWS Certified Solutions Architect – Associate (in preparation)",
+      "only": [
+        "au"
+      ]
+    },
     {
       "text": "Generative AI with Large Language Models – DeepLearning.AI & AWS (Coursera)",
       "only": [

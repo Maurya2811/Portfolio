@@ -3,6 +3,8 @@
 
     python3 scripts/build_resume.py            # web page + both PDFs
     python3 scripts/build_resume.py --no-pdf   # web page only
+    python3 scripts/build_resume.py --named    # + private PDFs with real client
+                                               #   names, into ../personal-vault/resumes/
 
 Outputs:
   resume/index.html          public web resume (never contains a phone number)
@@ -118,8 +120,8 @@ def body(data, variant, contact=None, plain=False):
             name = f'<a href="{esc(p["link"])}">{name}</a>'
         out.append(
             '<div class="entry">'
-            f'<h3>{name} <span class="ctx">· {esc(p["context"])}</span></h3>'
-            f'<p class="role-meta"><span></span><span>{esc(p["dates"])}</span></p>'
+            f'<div class="proj-head"><h3>{name} <span class="ctx">· {esc(p["context"])}</span></h3>'
+            f'<span class="date">{esc(p["dates"])}</span></div>'
             "<ul>" + bullets(p["bullets"], variant) + "</ul></div>"
         )
 
@@ -135,9 +137,9 @@ def body(data, variant, contact=None, plain=False):
             f'<p class="role-meta"><span>{esc(e["school"])} · {esc(e["detail"])}</span><span>{esc(e["dates"])}</span></p>'
         )
 
-    out.append("<h2>Certifications &amp; Learning</h2><ul>")
-    out.append(bullets(data["learning"], variant))
-    out.append("</ul>")
+    learning = bullets(data["learning"], variant)
+    if learning:
+        out.append(f"<h2>Certifications &amp; Learning</h2><ul>{learning}</ul>")
     return "\n".join(out)
 
 
@@ -168,6 +170,8 @@ WEB_TEMPLATE = """<!DOCTYPE html>
         .resume-doc h2 {{ font-size: 13px; color: var(--accent); font-family: 'JetBrains Mono', monospace; letter-spacing: 1.5px; text-transform: uppercase; margin: 30px 0 10px; border-bottom: 1px solid var(--border); padding-bottom: 6px; }}
         .resume-doc h3 {{ font-size: 16px; margin: 16px 0 2px; font-weight: 700; }}
         .resume-doc h3 .ctx {{ color: var(--muted); font-weight: 500; }}
+        .resume-doc .proj-head {{ display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }}
+        .resume-doc .proj-head .date {{ color: var(--muted); font-size: 13px; font-family: 'JetBrains Mono', monospace; white-space: nowrap; }}
         .resume-doc p {{ color: var(--muted); }}
         .resume-doc .role-meta {{ display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; font-size: 13px; margin: 0 0 6px; font-family: 'JetBrains Mono', monospace; }}
         .resume-doc ul {{ margin: 4px 0 10px; padding-left: 20px; color: var(--muted); font-size: 14.5px; }}
@@ -222,6 +226,9 @@ PRINT_TEMPLATE = """<!DOCTYPE html>
   h2 {{ font-size: 10pt; text-transform: uppercase; letter-spacing: 1.2px; color: #0a6b4a; border-bottom: 1px solid #bbb; padding-bottom: 2px; margin: 11px 0 5px; }}
   h3 {{ font-size: 10.2pt; margin: 6px 0 0; }}
   h3 .ctx {{ font-weight: 400; color: #444; }}
+  .proj-head {{ display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-top: 6px; }}
+  .proj-head h3 {{ margin: 0; }}
+  .proj-head .date {{ font-size: 9pt; color: #444; white-space: nowrap; }}
   p {{ margin: 0 0 4px; }}
   .role-meta {{ display: flex; justify-content: space-between; font-size: 9pt; color: #444; margin: 0 0 2px; }}
   ul {{ margin: 1px 0 4px; padding-left: 15px; }}
@@ -256,6 +263,26 @@ def render_print(data, variant, contact):
     return PRINT_TEMPLATE.format(name=esc(data["name"]), body=text, body_attr=body_attr)
 
 
+def load_names(path):
+    """Private {anonymised phrase: real client name} map for named resumes."""
+    if path and Path(path).is_file():
+        return json.loads(Path(path).read_text(encoding="utf-8"))
+    print(f"WARN no client-names map at {path}; named resumes skipped")
+    return None
+
+
+def apply_names(html_text, names):
+    for anon, real in names.items():
+        if not anon.startswith("_"):
+            html_text = html_text.replace(anon, real)
+    return html_text
+
+
+def public_names(data, names):
+    """Names map to apply to the public PDFs, only when the owner opted in."""
+    return names if names and data.get("namesInPublicPdfs") else None
+
+
 def find_chrome():
     for name in ("google-chrome", "google-chrome-stable", "chromium", "chromium-browser"):
         if shutil.which(name):
@@ -278,6 +305,8 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--no-pdf", action="store_true")
     ap.add_argument("--contact", type=Path, default=None)
+    ap.add_argument("--named", action="store_true",
+                    help="also write private PDFs with real client names into ../personal-vault/resumes/")
     args = ap.parse_args()
 
     data = json.loads((ROOT / "data" / "resume.json").read_text(encoding="utf-8"))
@@ -291,10 +320,23 @@ def main():
         print("WARN no Chrome/Chromium found; PDFs not rebuilt")
         return 0
     contact = load_contact(args.contact or default_contact_path())
+    vault = ROOT.parent / "personal-vault"
+    names = None
+    if args.named or data.get("namesInPublicPdfs"):
+        names = load_names(vault / "facts" / "client-names.json")
+    pub = public_names(data, names)
     for variant, v in data["variants"].items():
         out = ROOT / "resume" / v["pdf"]
-        build_pdf(chrome, render_print(data, variant, contact), out)
-        print(f"wrote resume/{v['pdf']}")
+        html_text = render_print(data, variant, contact)
+        build_pdf(chrome, apply_names(html_text, pub) if pub else html_text, out)
+        print(f"wrote resume/{v['pdf']}" + (" (with client names)" if pub else ""))
+
+    if args.named:
+        if names:
+            for variant, v in data["variants"].items():
+                out = vault / "resumes" / v["pdf"].replace(".pdf", "_named.pdf")
+                build_pdf(chrome, apply_names(render_print(data, variant, contact), names), out)
+                print(f"wrote {out.relative_to(ROOT.parent)}")
     return 0
 
 
