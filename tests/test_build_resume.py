@@ -92,6 +92,43 @@ class BuildResumeTests(unittest.TestCase):
         self.assertNotIn("{years}", html)
         self.assertRegex(html, r"Engineer with \d+(\.5)?\+ years")
 
+    def test_variant_only_filters(self):
+        data = json.loads(json.dumps(DATA))
+        data["projects"].append({"name": "AUONLY", "context": "c", "dates": "d", "bullets": ["x"], "only": ["au"]})
+        data["experience"][0]["bullets"].append({"text": "Bullet for india", "only": ["india"]})
+        au = br.render_print(data, "au", CONTACT)
+        india = br.render_print(data, "india", CONTACT)
+        self.assertIn("AUONLY", au)
+        self.assertNotIn("AUONLY", india)
+        self.assertIn("Bullet for india", india)
+        self.assertNotIn("Bullet for india", au)
+        self.assertNotIn("{'text'", india)
+        self.assertIn("AUONLY", br.render_web(data))
+
+    def test_experience_entry_only(self):
+        data = json.loads(json.dumps(DATA))
+        data["experience"].append({"company": "Intern Co", "title": "Intern", "location": "Remote",
+                                   "dates": "2023", "bullets": ["x"], "only": ["au"]})
+        self.assertIn("Intern Co", br.render_print(data, "au", CONTACT))
+        self.assertNotIn("Intern Co", br.render_print(data, "india", CONTACT))
+
+    def test_compact_variant(self):
+        data = json.loads(json.dumps(DATA))
+        data["variants"]["india"]["compact"] = True
+        self.assertIn('<body class="compact">', br.render_print(data, "india", CONTACT))
+        self.assertNotIn('class="compact"', br.render_print(data, "au", CONTACT))
+        self.assertNotIn('class="compact"', br.render_web(data))
+
+    def test_print_is_ats_safe(self):
+        html = br.render_print(DATA, "au", CONTACT)
+        self.assertIn("github.com/x", html)
+        self.assertIn(" | ", html)
+        self.assertNotIn("→", html)
+        self.assertNotIn("−", html)
+        self.assertIn("800 to 1,200", html)
+        self.assertIn("<h2>Projects</h2>", html)
+        self.assertIn("→", br.render_web(DATA))
+
     def test_repo_data_is_valid(self):
         data = json.loads((SCRIPT.parent.parent / "data" / "resume.json").read_text())
         html = br.render_web(data)

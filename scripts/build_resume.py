@@ -58,8 +58,21 @@ def default_contact_path():
     return Path(env) if env else ROOT.parent / "personal-vault" / "facts" / "contact.json"
 
 
-def body(data, variant, contact=None):
-    """Resume body shared by the web page and the print variants."""
+def shown(item, variant):
+    return not isinstance(item, dict) or variant in item.get("only", [variant])
+
+
+def bullets(items, variant):
+    return "".join(
+        f"<li>{md(b['text'] if isinstance(b, dict) else b)}</li>" for b in items if shown(b, variant)
+    )
+
+
+def body(data, variant, contact=None, plain=False):
+    """Resume body shared by the web page and the print variants.
+
+    plain=True is the ATS-safe print form: visible URLs and | separators.
+    """
     v = data["variants"][variant]
     contact = contact or {}
     bits = [esc(v["location"])]
@@ -67,11 +80,14 @@ def body(data, variant, contact=None):
     if phone:
         bits.append(esc(phone))
     bits.append(f'<a href="mailto:{esc(data["email"])}">{esc(data["email"])}</a>')
-    bits += [f'<a href="{esc(l["url"])}">{esc(l["label"])}</a>' for l in data["links"]]
+    for l in data["links"]:
+        text = re.sub(r"^https?://(www\.)?", "", l["url"]).rstrip("/") if plain else l["label"]
+        bits.append(f'<a href="{esc(l["url"])}">{esc(text)}</a>')
+    sep = " | " if plain else " · "
     out = [
         f'<h1>{esc(data["name"])}</h1>',
         f'<p class="headline">{esc(data["headline"])}</p>',
-        f'<p class="contact-line">{" · ".join(bits)}</p>',
+        f'<p class="contact-line">{sep.join(bits)}</p>',
     ]
     rights = contact.get("workRights") if variant == "au" else ""
     if rights:
@@ -84,15 +100,19 @@ def body(data, variant, contact=None):
 
     out.append("<h2>Experience</h2>")
     for job in data["experience"]:
+        if not shown(job, variant):
+            continue
         out.append(
             '<div class="entry">'
             f'<h3>{esc(job["title"])} · {esc(job["company"])}</h3>'
             f'<p class="role-meta"><span>{esc(job["location"])}</span><span>{esc(job["dates"])}</span></p>'
-            "<ul>" + "".join(f"<li>{md(b)}</li>" for b in job["bullets"]) + "</ul></div>"
+            "<ul>" + bullets(job["bullets"], variant) + "</ul></div>"
         )
 
-    out.append("<h2>Selected Projects</h2>")
+    out.append("<h2>Projects</h2>")
     for p in data["projects"]:
+        if not shown(p, variant):
+            continue
         name = esc(p["name"])
         if p.get("link"):
             name = f'<a href="{esc(p["link"])}">{name}</a>'
@@ -100,11 +120,12 @@ def body(data, variant, contact=None):
             '<div class="entry">'
             f'<h3>{name} <span class="ctx">· {esc(p["context"])}</span></h3>'
             f'<p class="role-meta"><span></span><span>{esc(p["dates"])}</span></p>'
-            "<ul>" + "".join(f"<li>{md(b)}</li>" for b in p["bullets"]) + "</ul></div>"
+            "<ul>" + bullets(p["bullets"], variant) + "</ul></div>"
         )
 
     out.append('<h2>Technical Skills</h2><ul class="skills">')
-    out += [f'<li><strong>{esc(s["group"])}:</strong> {esc(s["items"])}</li>' for s in data["skills"]]
+    out += [f'<li><strong>{esc(s["group"])}:</strong> {esc(s["items"])}</li>'
+            for s in data["skills"] if shown(s, variant)]
     out.append("</ul>")
 
     out.append("<h2>Education</h2>")
@@ -115,7 +136,7 @@ def body(data, variant, contact=None):
         )
 
     out.append("<h2>Certifications &amp; Learning</h2><ul>")
-    out += [f"<li>{md(x)}</li>" for x in data["learning"]]
+    out.append(bullets(data["learning"], variant))
     out.append("</ul>")
     return "\n".join(out)
 
@@ -188,15 +209,16 @@ WEB_TEMPLATE = """<!DOCTYPE html>
 """
 
 PRINT_TEMPLATE = """<!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"><title>{name} — Resume</title>
+<html lang="en"><head><meta charset="UTF-8"><title>{name} - Software Engineer Resume</title><meta name="author" content="{name}">
 <style>
-  @page {{ size: A4; margin: 13mm 14mm; }}
+  @page {{ size: A4; margin: 12mm 13mm; }}
   * {{ box-sizing: border-box; }}
   body {{ font-family: 'Helvetica Neue', Arial, 'Liberation Sans', sans-serif; color: #111; font-size: 10pt; line-height: 1.38; margin: 0; }}
   a {{ color: #0b4f9c; text-decoration: none; }}
   h1 {{ font-size: 20pt; margin: 0; letter-spacing: .2px; }}
   .headline {{ margin: 1px 0 3px; font-size: 10.5pt; font-weight: 600; color: #0a6b4a; }}
   .contact-line {{ margin: 0 0 2px; font-size: 9.2pt; color: #333; }}
+  .contact-line a {{ white-space: nowrap; }}
   h2 {{ font-size: 10pt; text-transform: uppercase; letter-spacing: 1.2px; color: #0a6b4a; border-bottom: 1px solid #bbb; padding-bottom: 2px; margin: 11px 0 5px; }}
   h3 {{ font-size: 10.2pt; margin: 6px 0 0; }}
   h3 .ctx {{ font-weight: 400; color: #444; }}
@@ -207,8 +229,12 @@ PRINT_TEMPLATE = """<!DOCTYPE html>
   ul.skills {{ list-style: none; padding-left: 0; }}
   h2, h3 {{ break-after: avoid; }}
   li, .entry {{ break-inside: avoid; }}
+  .compact {{ font-size: 9.3pt; line-height: 1.3; }}
+  .compact h2 {{ margin: 8px 0 4px; }}
+  .compact h3 {{ margin: 4px 0 0; }}
+  .compact li {{ margin-bottom: 1px; }}
 </style></head>
-<body>
+<body{body_attr}>
 {body}
 </body></html>
 """
@@ -223,7 +249,11 @@ def render_web(data):
 
 
 def render_print(data, variant, contact):
-    return PRINT_TEMPLATE.format(name=esc(data["name"]), body=body(data, variant, contact))
+    body_attr = ' class="compact"' if data["variants"][variant].get("compact") else ""
+    text = body(data, variant, contact, plain=True)
+    # Older ATS parsers mangle arrows and the Unicode minus sign.
+    text = text.replace(" → ", " to ").replace("→", " to ").replace("−", "-")
+    return PRINT_TEMPLATE.format(name=esc(data["name"]), body=text, body_attr=body_attr)
 
 
 def find_chrome():

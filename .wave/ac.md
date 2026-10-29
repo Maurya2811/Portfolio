@@ -51,3 +51,18 @@ Rejects: raw `**` or unescaped `<` in output.
 Trigger: a summary in `data/resume.json` contains `{years}` and the file has `"careerStart": "YYYY-MM"`.
 Observable: `{years}` renders as whole or half years since `careerStart`, rounded down, with a `+` (Apr 2024 → Oct 2026 renders `2.5+`; → Apr 2027 renders `3+`).
 Rejects: a literal `{years}` in output, or rounding up (e.g. `3+` in Mar 2027).
+
+## AC-11 Per-variant content
+Trigger: an experience entry, project, skill or bullet in `data/resume.json` carries `"only": ["au"]` (bullets may be plain strings or `{"text": ..., "only": [...]}`).
+Observable: the item renders in the listed variants only; the web page renders the `au` variant; plain-string bullets render everywhere.
+Rejects: an `only: ["au"]` project appearing in the India print output, or object bullets rendering as `{'text': ...}`.
+
+## AC-12 Compact print variant
+Trigger: a variant has `"compact": true`.
+Observable: its print HTML has `<body class="compact">` (tighter type for a 1-page fit); other variants have a plain `<body>`.
+Rejects: compact styling leaking into the AU print or the web page.
+
+## AC-13 ATS-safe print output
+Trigger: any print variant is rendered.
+Observable: links appear as visible plain URLs without the scheme (e.g. `github.com/x`); the contact line uses ` | ` separators; the text contains no `→` or `−` (rendered as `to` and `-`); the projects heading is exactly `Projects`.
+Rejects: a print PDF whose only link text is a label such as "GitHub", or one containing `→`.

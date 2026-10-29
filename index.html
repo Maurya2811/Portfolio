@@ -91,9 +91,9 @@
             <div class="about-grid">
                 <div>
                     <p>
-                        I'm a backend engineer at <strong>Addverb Australia</strong>. I work on the software that runs
-                        warehouse robots, storage systems and pick stations: order orchestration, allocation,
-                        hardware adapters and the messaging that connects them.
+                        I'm a backend engineer at <strong>Addverb Australia</strong>. I build and run the software behind
+                        automated warehouses: order orchestration, allocation, hardware adapters, operator tools and the
+                        messaging that connects 20+ services. It runs 24/7, and when it breaks, real orders stop.
                     </p>
                     <p>
                         I like problems where the answer depends on <strong>measuring the system</strong>, not guessing.
@@ -108,11 +108,16 @@
                 </div>
                 <aside class="about-meta" aria-label="Quick facts">
                     <div><span>Based in</span>Melbourne, Australia</div>
-                    <div><span>Experience</span>Full-time since Apr 2024 (plus internship)</div>
+                    <div><span>Experience</span>Full-time since Apr 2024 (plus 2 internships)</div>
                     <div><span>Core stack</span>Java 17 · Spring Boot · RabbitMQ / Kafka · Kubernetes</div>
                     <div><span>Education</span>B.Tech CSE, RKGIT (AKTU), CGPA 8.89</div>
                     <div><span>Now learning</span>AWS Solutions Architect – Associate</div>
                 </aside>
+            </div>
+            <div class="skills-grid" style="margin-top:28px" aria-label="What I bring">
+                <div class="skill-group"><h4>Ship backend at scale</h4><p style="margin:0;color:var(--muted);font-size:14px">Java / Spring Boot microservices, event-driven messaging and Kubernetes, from design to production rollout.</p></div>
+                <div class="skill-group"><h4>Own production</h4><p style="margin:0;color:var(--muted);font-size:14px">Root-cause analysis across distributed services, observability, runbooks and fixes on a live 24/7 site.</p></div>
+                <div class="skill-group"><h4>Work with customers</h4><p style="margin:0;color:var(--muted);font-size:14px">Forward-deployed: scope change requests with the client, agree interface contracts, and deliver against SLAs.</p></div>
             </div>
         </section>
 
@@ -121,13 +126,15 @@
             <ol class="timeline">
                 <li>
                     <div class="tl-head">
-                        <h4>Software Engineer · <span>Addverb Australia</span></h4>
+                        <h4>Software Engineer (Forward Deployed) · <span>Addverb Australia</span></h4>
                         <span class="tl-date">Jan 2026 – Present · Melbourne</span>
                     </div>
                     <ul>
-                        <li>Forward-deployed on a <strong>20+ microservice</strong> warehouse execution platform for a tier-1 global retail brand's distribution centre; I own change requests from design to production rollout.</li>
+                        <li>Forward-deployed on a 24/7, <strong>20+ microservice</strong> order-fulfilment platform (Java, Spring Boot, RabbitMQ, MongoDB, Angular, Kubernetes) for a tier-1 global retail brand; I own change requests from client scoping to production rollout.</li>
                         <li>Raised goods-to-person picking throughput <strong>800 → 1,200 totes/hr (+50%)</strong> by tracing per-stage dwell time and fixing work-release and allocation logic. This closed the gap to the contracted SLA.</li>
-                        <li>Built a cross-service irregular-event store (RabbitMQ → MongoDB) with Grafana views, so root-cause analysis is a single correlated query instead of a multi-pod log search.</li>
+                        <li>Led root-cause analysis for <strong>20+ production incidents</strong> (consumer crashes, message storms, race conditions) and shipped the fixes, runbooks and recovery tools.</li>
+                        <li>Also forward-deployed on a metro rail project for a global engineering company, managing UAT test cases and defect triage with the client.</li>
+                        <li>Built a cross-service irregular-event store (RabbitMQ → MongoDB) with Grafana alerting and Angular operator tools, so root-cause analysis is a single correlated query instead of a multi-pod log search.</li>
                         <li>Segregated competing business flows on shared automation: <strong>+30%</strong> client operational efficiency.</li>
                     </ul>
                 </li>
@@ -139,6 +146,7 @@
                     <ul>
                         <li>Decomposed monolithic modules into <strong>12+ Spring Boot microservices</strong>, cutting p95 API latency <strong>800 → 600 ms</strong>.</li>
                         <li>Built a real-time event pipeline processing <strong>10,000+ events/min with zero data loss</strong> (idempotent consumers, DLQ, replay); <strong>99.6%</strong> uptime across production sites.</li>
+                        <li>Mentored interns in the India engineering team.</li>
                         <li>Built an <strong>LLM inventory assistant</strong> (RAG + read-only tool calls) auto-resolving 75%+ of operator queries; −40% support tickets.</li>
                         <li>Delivered hardware integration, routing-algorithm and ASRS projects for clients in India and the US (see case studies); a Python tool migrated 200+ Grafana dashboards, cutting 8 hrs → 20 min.</li>
                     </ul>
@@ -152,6 +160,15 @@
                         <li>Built Java / Spring Boot microservice components and integrated inter-service messaging.</li>
                     </ul>
                 </li>
+                <li>
+                    <div class="tl-head">
+                        <h4>Summer Intern, Web Development · <span>Celebal Technologies</span></h4>
+                        <span class="tl-date">May 2023 – Jun 2023 · Remote</span>
+                    </div>
+                    <ul>
+                        <li>Built a hotel room-booking web application in JavaScript (MERN stack).</li>
+                    </ul>
+                </li>
             </ol>
         </section>
 
@@ -160,28 +177,28 @@
             <p class="section-sub">Problem, my contribution, architecture, trade-offs and results. All of them are anonymised and contain no proprietary details.</p>
             <div class="projects">
                 <a class="project project-link" href="projects/retail-dc-platform.html">
-                    <header><h4>Retail DC Execution Platform</h4><span class="tag">Distributed Systems · Forward-deployed</span></header>
+                    <header><h4>+50% Throughput on a 24/7 Platform of 20+ Java Microservices</h4><span class="tag">Distributed Systems · Forward-deployed</span></header>
                     <p class="problem"><strong>Problem:</strong> a live site stuck at ~800 totes/hr against a contracted SLA, with no cross-service view of where totes lost time.</p>
                     <p class="impact"><strong>Result:</strong> correlated event store, then a work-release fix: <strong>+50%</strong> throughput, SLA met.</p>
                     <ul class="stack"><li>Java</li><li>Spring Boot</li><li>RabbitMQ</li><li>MongoDB</li><li>Kubernetes</li></ul>
                     <span class="project-cta">Read case study →</span>
                 </a>
                 <a class="project project-link" href="projects/llm-inventory-agent.html">
-                    <header><h4>LLM Inventory Assistant</h4><span class="tag">AI · RAG · Tool Calling</span></header>
+                    <header><h4>LLM Agent (RAG + Tool Calling) That Cut Support Tickets 40%</h4><span class="tag">AI · RAG · Tool Calling</span></header>
                     <p class="problem"><strong>Problem:</strong> operators raised support tickets for routine inventory questions.</p>
                     <p class="impact"><strong>Result:</strong> grounded assistant on read-only tools: <strong>75%+</strong> auto-resolved, <strong>−40%</strong> tickets.</p>
                     <ul class="stack"><li>LLM APIs</li><li>RAG</li><li>Java</li><li>SQL</li></ul>
                     <span class="project-cta">Read case study →</span>
                 </a>
                 <a class="project project-link" href="projects/tote-routing.html">
-                    <header><h4>Tote Routing Optimisation</h4><span class="tag">Algorithms · Performance</span></header>
+                    <header><h4>Congestion-Aware Routing Engine: −200 ms per Decision</h4><span class="tag">Algorithms · Performance</span></header>
                     <p class="problem"><strong>Problem:</strong> static FIFO routing ignored congestion and starved pick stations at peak.</p>
                     <p class="impact"><strong>Result:</strong> congestion-aware Dijkstra + K-shortest: <strong>−200 ms</strong>, <strong>+12%</strong> pilot throughput.</p>
                     <ul class="stack"><li>Java</li><li>Graph algorithms</li><li>Spring Boot</li></ul>
                     <span class="project-cta">Read case study →</span>
                 </a>
                 <a class="project project-link" href="projects/shuttle-telemetry.html">
-                    <header><h4>Robotic Shuttle Telemetry</h4><span class="tag">Integration · Real-Time</span></header>
+                    <header><h4>Real-Time Telemetry Pipeline for 50+ Robots (99.6% Capture)</h4><span class="tag">Integration · Real-Time</span></header>
                     <p class="problem"><strong>Problem:</strong> third-party shuttles kept their own state, so outages took hours to triage.</p>
                     <p class="impact"><strong>Result:</strong> adapter + telemetry pipeline: <strong>99.6%</strong> capture, <strong>−70%</strong> diagnosis time.</p>
                     <ul class="stack"><li>Java</li><li>TCP / REST</li><li>RabbitMQ</li><li>MongoDB</li><li>Grafana</li></ul>
@@ -194,12 +211,14 @@
         <section class="section" id="skills">
             <h3 class="section-title"><span>04.</span> Skills</h3>
             <div class="skills-grid">
-                <div class="skill-group"><h4>Languages</h4><ul><li>Java 17</li><li>SQL</li><li>Python</li></ul></div>
+                <div class="skill-group"><h4>Languages</h4><ul><li>Java 17</li><li>SQL</li><li>Python</li><li>TypeScript</li></ul></div>
                 <div class="skill-group"><h4>Backend</h4><ul><li>Spring Boot</li><li>Spring Data JPA</li><li>REST APIs</li><li>Microservices</li><li>Concurrency</li><li>Event-driven design</li></ul></div>
                 <div class="skill-group"><h4>Messaging &amp; Data</h4><ul><li>RabbitMQ</li><li>Kafka</li><li>Redis</li><li>MongoDB</li><li>MySQL</li><li>SQL Server</li></ul></div>
-                <div class="skill-group"><h4>Cloud &amp; DevOps</h4><ul><li>Docker</li><li>Kubernetes</li><li>Helm</li><li>Jenkins</li><li>CI/CD</li><li>AWS (learning)</li></ul></div>
-                <div class="skill-group"><h4>Observability</h4><ul><li>Grafana</li><li>Jaeger</li><li>Distributed logging</li><li>Event-store RCA</li></ul></div>
-                <div class="skill-group"><h4>AI</h4><ul><li>LLM APIs</li><li>RAG</li><li>Tool-calling agents</li><li>Prompt engineering</li></ul></div>
+                <div class="skill-group"><h4>Cloud &amp; DevOps</h4><ul><li>Docker</li><li>Kubernetes</li><li>Helm</li><li>Jenkins</li><li>CI/CD</li><li>nginx</li><li>AWS (learning)</li></ul></div>
+                <div class="skill-group"><h4>Reliability</h4><ul><li>Grafana</li><li>Jaeger</li><li>Distributed logging</li><li>Incident RCA</li><li>Runbooks</li></ul></div>
+                <div class="skill-group"><h4>Frontend</h4><ul><li>Angular</li><li>HTML / CSS</li><li>React (projects)</li><li>Node.js (projects)</li></ul></div>
+                <div class="skill-group"><h4>AI</h4><ul><li>LLM APIs</li><li>RAG</li><li>Tool-calling agents</li><li>AI-assisted dev (Claude Code)</li></ul></div>
+                <div class="skill-group"><h4>Practices</h4><ul><li>System design</li><li>DSA</li><li>Agile / Scrum</li><li>Code review</li><li>Technical writing</li></ul></div>
             </div>
         </section>
 

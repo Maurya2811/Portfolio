@@ -1,50 +1,108 @@
 {
   "_doc": "Single source for the resume. Edit here, then run: python3 scripts/build_resume.py. Phone numbers and work rights are NOT stored here; they come from ../personal-vault/facts/contact.json and only go into the PDFs. Every number must match the facts ledger.",
-  "_lastUpdated": "2026-10-29",
+  "_lastUpdated": "2026-10-30",
   "name": "Rahul Maurya",
   "careerStart": "2024-04",
-  "headline": "Software Engineer · Backend & Distributed Systems",
+  "headline": "Software Engineer · Backend & Distributed Systems · Java · Spring Boot · Microservices",
   "email": "maurya2811@gmail.com",
   "links": [
-    {"label": "Portfolio", "url": "https://maurya2811.github.io/Portfolio"},
-    {"label": "LinkedIn", "url": "https://www.linkedin.com/in/rahul-maurya-277069227"},
-    {"label": "GitHub", "url": "https://github.com/Maurya2811"},
-    {"label": "LeetCode", "url": "https://leetcode.com/Rahul_2811/"}
+    {
+      "label": "Portfolio",
+      "url": "https://maurya2811.github.io/Portfolio"
+    },
+    {
+      "label": "LinkedIn",
+      "url": "https://www.linkedin.com/in/rahul-maurya-277069227"
+    },
+    {
+      "label": "GitHub",
+      "url": "https://github.com/Maurya2811"
+    },
+    {
+      "label": "LeetCode",
+      "url": "https://leetcode.com/Rahul_2811/"
+    }
   ],
   "variants": {
     "au": {
       "location": "Melbourne, Australia",
       "phone": "au",
       "pdf": "Rahul_Maurya.pdf",
-      "summary": "Backend software engineer with {years} years building and running event-driven Java / Spring Boot microservices for warehouse automation (WES / WCS / ASRS) that enterprise clients operate 24/7. Currently forward-deployed on a live distribution centre in Melbourne, where I raised goods-to-person picking throughput by 50% and closed the gap to a contracted SLA. Strong in distributed systems, messaging (RabbitMQ, Kafka), Kubernetes and production observability, with hands-on LLM tooling experience."
+      "summary": "Software engineer with {years} years building and running high-availability, event-driven backend systems in Java and Spring Boot, from design to 24/7 production. Currently forward-deployed at a live customer site in Melbourne, where I raised fulfilment throughput by 50% and own production reliability across 20+ microservices. Strong in distributed systems, messaging (RabbitMQ, Kafka), Kubernetes, observability and incident root-cause analysis, with full-stack (Angular) and LLM tooling experience."
     },
     "india": {
       "location": "Melbourne, Australia · Open to relocation to India",
       "phone": "india",
       "pdf": "Rahul_Maurya_India.pdf",
-      "summary": "Backend software engineer with {years} years building and running event-driven Java / Spring Boot microservices for warehouse automation (WES / WCS / ASRS) used 24/7 by enterprise clients across India, the US and Australia. Raised picking throughput by 50%, cut p95 API latency by 25% and built pipelines handling 10,000+ events/min with zero data loss. Looking for SDE-2 / backend roles on scalable, cloud-native systems."
+      "summary": "Backend software engineer ({years} years) building high-availability, event-driven Java / Spring Boot microservices that run 24/7 for enterprise clients in India, the US and Australia. +50% throughput, −25% p95 latency, 10,000+ events/min with zero data loss. Looking for SDE-2 / backend roles at product companies.",
+      "compact": true
     }
   },
   "skills": [
-    {"group": "Languages", "items": "Java 17, SQL, Python"},
-    {"group": "Backend", "items": "Spring Boot, Spring Data JPA, REST APIs, microservices, event-driven architecture, multithreading & concurrency"},
-    {"group": "Messaging & Data", "items": "RabbitMQ, Apache Kafka, Redis, MongoDB, MySQL, SQL Server"},
-    {"group": "Cloud & DevOps", "items": "Docker, Kubernetes, Helm, Jenkins, Git, CI/CD; AWS (EC2, EKS, S3, RDS, IAM) working knowledge"},
-    {"group": "Observability", "items": "Grafana, Jaeger, distributed logging, event-store based root-cause analysis"},
-    {"group": "AI", "items": "LLM APIs, retrieval-augmented generation (RAG), tool-calling agents, prompt engineering"},
-    {"group": "Familiar with", "items": "gRPC, GraphQL, OAuth2 / JWT, Terraform, LangChain"}
+    {
+      "group": "Languages",
+      "items": "Java 17, SQL, Python, TypeScript / JavaScript"
+    },
+    {
+      "group": "Backend",
+      "items": "Spring Boot, Spring Data JPA, REST APIs, microservices, event-driven architecture, multithreading & concurrency"
+    },
+    {
+      "group": "Messaging & Data",
+      "items": "RabbitMQ, Apache Kafka, Redis, MongoDB, MySQL, SQL Server"
+    },
+    {
+      "group": "Cloud & DevOps",
+      "items": "Docker, Kubernetes, Helm, Jenkins, Git, CI/CD, nginx; AWS (EC2, EKS, S3, RDS, IAM) working knowledge"
+    },
+    {
+      "group": "Frontend",
+      "items": "Angular, HTML / CSS; React and Node.js (project experience)"
+    },
+    {
+      "group": "Reliability",
+      "items": "Grafana, Jaeger, distributed logging, incident management, root-cause analysis, runbooks"
+    },
+    {
+      "group": "AI",
+      "items": "LLM APIs, RAG, tool-calling agents, AI-assisted development (Claude Code)"
+    },
+    {
+      "group": "Practices",
+      "items": "System design, data structures & algorithms, Agile / Scrum, code review, technical documentation",
+      "only": [
+        "au"
+      ]
+    }
   ],
   "experience": [
     {
       "company": "Addverb Australia",
-      "title": "Software Engineer",
+      "title": "Software Engineer (Forward Deployed)",
       "location": "Melbourne, Australia",
       "dates": "Jan 2026 – Present",
       "bullets": [
-        "Forward-deployed on a **20+ microservice** warehouse execution platform (Java 17, Spring Boot, RabbitMQ, MongoDB, SQL Server, Kubernetes / Helm) for a tier-1 global retail brand's distribution centre; own change requests from design through production rollout.",
-        "Raised goods-to-person picking throughput from **800 to 1,200 totes/hr (+50%)** by tracing per-stage dwell time and fixing work-release and allocation logic, closing the gap to the contracted SLA and unblocking a **seven-figure (AUD)** contractual milestone.",
-        "Built a cross-service irregular-event store (RabbitMQ to MongoDB, correlation-id indexed) with Grafana views, replacing manual log searches across pods with a single correlated query for root-cause analysis.",
-        "Segregated competing business flows on shared automation, improving client operational efficiency by **30%**."
+        "Forward-deployed on a 24/7, **20+ microservice** order-fulfilment platform (Java 17, Spring Boot, RabbitMQ, MongoDB, SQL Server, Angular, Kubernetes / Helm) for a tier-1 global retail brand; own change requests end to end, from client scoping and estimation to production rollout.",
+        "Raised fulfilment throughput by **50% (800 → 1,200 totes/hr)** by measuring per-stage dwell time and fixing work release and allocation logic, closing the gap to the contracted SLA and unblocking a **seven-figure (AUD)** contractual milestone.",
+        "Led root-cause analysis for **20+ production incidents** across the distributed stack (consumer crashes, message storms, race conditions, retry drift), shipping fixes, runbooks, anomaly detectors and design / RCA documents that keep a live site running.",
+        {
+          "text": "Built a cross-service irregular-event store (RabbitMQ → MongoDB) with Grafana alerting and Angular operator tools, replacing multi-pod log searches with a single correlated query.",
+          "only": [
+            "au"
+          ]
+        },
+        {
+          "text": "Segregated competing business flows on shared automation (**+30%** client operational efficiency) and defined interface contracts with PLC and host-system (WMS) teams.",
+          "only": [
+            "au"
+          ]
+        },
+        {
+          "text": "Forward-deployed on a second engagement, a metro rail project for a global engineering company: managed UAT test cases and defect triage with the client in Azure DevOps.",
+          "only": [
+            "au"
+          ]
+        }
       ]
     },
     {
@@ -53,12 +111,28 @@
       "location": "Noida, India",
       "dates": "Apr 2024 – Dec 2025",
       "bullets": [
-        "Decomposed monolithic modules of a Warehouse Control System into **12+ Spring Boot microservices** over RabbitMQ, cutting p95 API latency from **800 ms to 600 ms (−25%)**.",
+        "Decomposed a monolithic warehouse control system into **12+ Spring Boot microservices** over RabbitMQ, cutting p95 API latency from **800 ms to 600 ms (−25%)**.",
         "Built a real-time event pipeline on MongoDB with tuned MySQL / SQL Server queries, processing **10,000+ events/min with zero data loss** (idempotent consumers, dead-letter queues, replay).",
-        "Sustained **99.6% uptime** across production sites through Docker / Kubernetes deployments and Jenkins CI/CD.",
+        {
+          "text": "Sustained **99.6% uptime** across production sites through Docker / Kubernetes deployments and Jenkins CI/CD.",
+          "only": [
+            "au"
+          ]
+        },
+        "Mentored interns in the India engineering team.",
         "Built an LLM-powered inventory assistant (RAG plus read-only tool calls) that auto-resolves **75%+** of operator queries, reducing support tickets by **40%**.",
-        "Wrote a Python tool that migrates Grafana dashboards across 3 network environments (200+ dashboards), cutting each migration from **8 hours to 20 minutes**.",
-        "Delivered monitoring and hardware health dashboards that cut incident response time by **60%**; shipped WMS features to **5+ enterprise clients** in Scrum teams with QA, DevOps and Product."
+        {
+          "text": "Wrote a Python tool that migrates Grafana dashboards across 3 network environments (**200+ dashboards**), cutting each migration from **8 hours to 20 minutes**.",
+          "only": [
+            "au"
+          ]
+        },
+        {
+          "text": "Delivered monitoring and hardware health dashboards that cut incident response time by **60%**; shipped WMS features to **5+ enterprise clients** in Scrum teams with QA, DevOps and Product.",
+          "only": [
+            "au"
+          ]
+        }
       ]
     },
     {
@@ -69,49 +143,95 @@
       "bullets": [
         "Built Java / Spring Boot microservice components and integrated messaging for inter-service communication."
       ]
+    },
+    {
+      "company": "Celebal Technologies",
+      "title": "Summer Intern, Web Development",
+      "location": "Remote",
+      "dates": "May 2023 – Jun 2023",
+      "bullets": [
+        "Built a hotel room-booking web application in JavaScript (MERN stack) as the internship project."
+      ],
+      "only": [
+        "au"
+      ]
     }
   ],
   "projects": [
     {
-      "name": "Robotic Shuttle Integration & Telemetry",
+      "name": "Real-Time Telemetry Pipeline for 50+ Robots",
       "context": "US healthcare logistics provider",
       "dates": "Sep 2025 – Dec 2025",
       "link": "https://maurya2811.github.io/Portfolio/projects/shuttle-telemetry.html",
-      "bullets": ["Integrated third-party robotic shuttles and lifts through TCP / REST adapters; MongoDB telemetry pipeline at **99.6% capture** across 50+ devices; health dashboards cut downtime diagnosis by **70%**."]
+      "bullets": [
+        "Integrated third-party robotic shuttles and lifts through TCP / REST adapters; MongoDB telemetry pipeline at **99.6% capture** across 50+ devices; health dashboards cut downtime diagnosis by **70%**."
+      ]
     },
     {
-      "name": "Tote Routing Optimisation",
+      "name": "Congestion-Aware Routing Engine",
       "context": "D2C retailer fulfilment centre",
       "dates": "Jun 2025 – Aug 2025",
       "link": "https://maurya2811.github.io/Portfolio/projects/tote-routing.html",
-      "bullets": ["Graph-based routing in Java (Dijkstra plus Yen's K-shortest alternates on congestion-weighted edges): **−200 ms** per routing decision, **−15%** path resolution time, **+12%** pilot throughput."]
+      "bullets": [
+        "Graph-based routing in Java (Dijkstra plus Yen's K-shortest alternates on congestion-weighted edges): **−200 ms** per routing decision, **−15%** path resolution time, **+12%** pilot throughput."
+      ]
     },
     {
-      "name": "Deep-Lane ASRS (5-deep, 9-level)",
+      "name": "Robot Orchestration for High-Density Storage",
       "context": "Tyre manufacturing plant",
       "dates": "Oct 2024 – May 2025",
       "link": "https://maurya2811.github.io/Portfolio/projects/deep-lane-asrs.html",
-      "bullets": ["Orchestrated cranes, shuttles, duplex lifts and conveyors for **500+ daily transactions**; cut client interface testing from **3 months to 3 weeks** by helping QA and Process teams complete interface development."]
+      "bullets": [
+        "Orchestrated cranes, shuttles, duplex lifts and conveyors for **500+ daily transactions**; cut client interface testing from **3 months to 3 weeks** by helping QA and Process teams complete interface development."
+      ],
+      "only": [
+        "au"
+      ]
     },
     {
-      "name": "Manual-Format WMS",
+      "name": "Warehouse Management System Delivery",
       "context": "Large Indian grocery retailer",
       "dates": "2024",
-      "bullets": ["Fixed **70+ critical UAT defects** and ran 14 demos for senior client leadership; received a formal note of appreciation from the project manager."]
+      "bullets": [
+        "Fixed **70+ critical UAT defects** and ran 14 demos for senior client leadership; received a formal note of appreciation from the project manager."
+      ],
+      "only": [
+        "au"
+      ]
     },
     {
       "name": "RFP Management System",
       "context": "B.Tech capstone",
       "dates": "Jul 2023 – Feb 2024",
-      "bullets": ["Java / Spring Boot procurement platform with role-based access for 3+ personas and 15+ configurable report templates."]
+      "bullets": [
+        "Java / Spring Boot procurement platform with role-based access for 3+ personas and 15+ configurable report templates."
+      ],
+      "only": [
+        "au"
+      ]
     }
   ],
   "education": [
-    {"degree": "B.Tech, Computer Science & Engineering", "school": "Raj Kumar Goel Institute of Technology, Ghaziabad (AKTU)", "dates": "2020 – 2024", "detail": "CGPA 8.89 / 10"}
+    {
+      "degree": "B.Tech, Computer Science & Engineering",
+      "school": "Raj Kumar Goel Institute of Technology, Ghaziabad (AKTU)",
+      "dates": "2020 – 2024",
+      "detail": "CGPA 8.89 / 10"
+    }
   ],
   "learning": [
     "AWS Certified Solutions Architect – Associate (in preparation)",
-    "Generative AI with Large Language Models – DeepLearning.AI & AWS (Coursera)",
-    "Software Design and Architecture Specialization – University of Alberta (Coursera)"
+    {
+      "text": "Generative AI with Large Language Models – DeepLearning.AI & AWS (Coursera)",
+      "only": [
+        "au"
+      ]
+    },
+    {
+      "text": "Software Design and Architecture Specialization – University of Alberta (Coursera)",
+      "only": [
+        "au"
+      ]
+    }
   ]
 }
